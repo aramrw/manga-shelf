@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod db;
+mod manga;
 
 fn main() {
     tauri::Builder::default()
@@ -22,7 +23,5 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-// async fn add_manga_folder() {   
-// }
 
 
