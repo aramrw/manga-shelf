@@ -5,7 +5,7 @@ use tokio::sync::Mutex;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct MangaFolder {
-    pub id: u32,
+    pub id: String,
     pub title: String,
     pub full_path: String,
     pub parent_path: Option<String>,
@@ -24,7 +24,7 @@ pub async fn migrate_manga_tables(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS manga_folder
         (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
             full_path TEXT NOT NULL,
             parent_path TEXT,
@@ -38,13 +38,13 @@ pub async fn migrate_manga_tables(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
     Ok(())
 }
 
-#[command]
-async fn add_manga_folder(path: String, handle: AppHandle) -> Result<(), sqlx::Error> {
+#[tauri::command]
+pub async fn add_manga_folder(path: String, handle: AppHandle) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
     let uuid = uuid::Uuid::new_v4().to_string();
     let split_path = split_path_parts(&path);
 
-    let result = sqlx::query(
+    sqlx::query(
         "INSERT INTO manga_folder
         (
             id, 
@@ -65,9 +65,8 @@ async fn add_manga_folder(path: String, handle: AppHandle) -> Result<(), sqlx::E
     .bind(path)
     .bind(split_path.parent)
     .execute(&pool)
-    .await?;
+    .await.unwrap();
 
-    Ok(())
 }
 
 fn split_path_parts(path: &str) -> PathParts {

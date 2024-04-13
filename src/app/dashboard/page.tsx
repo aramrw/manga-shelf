@@ -17,7 +17,7 @@ export default function Dashboard() {
       multiple: true,
     }).then((result: any) => {
       if (result) {
-        invoke("add_manga_folder", { mangaFolderPath: result[0] });
+        invoke("add_manga_folder", { path: result[0] });
         setMangaFolders([...mangaFolders, ...(result as string[])]);
       }
     });

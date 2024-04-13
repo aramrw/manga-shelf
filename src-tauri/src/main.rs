@@ -19,9 +19,8 @@ fn main() {
 
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![manga::add_manga_folder])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-
 
