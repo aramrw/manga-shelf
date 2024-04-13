@@ -4,29 +4,35 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PlusCircleIcon } from "@heroicons/react/16/solid";
 import { open } from "@tauri-apps/api/dialog";
+import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 import React, { useState, useEffect } from "react";
 
 export default function Dashboard() {
-  const [mangaFolders, setMangaFolders] = useState<string[]>([]);
+  const [mangaFolders, setMangaFolders] = useState<FileEntry[]>([]);
 
   const handleAddManga = () => {
-    const selected = open({
+    open({
       title: "Select Manga Folder",
       directory: true,
       multiple: true,
+      recursive: true,
     }).then((result: any) => {
       if (result) {
-        invoke("add_manga_folder", { path: result[0] });
-        setMangaFolders([...mangaFolders, ...(result as string[])]);
+					handleReadDirectories(result as string[]);
+        //setMangaFolders([...mangaFolders, ...(result as string[])]);
       }
     });
   };
 
-  // useEffect(() => {
-  //   console.log(mangaFolders);
-  // }, [mangaFolders]);
-
+	const handleReadDirectories = (dirs: string[]) => {
+		for (const dir of dirs) {
+			readDir(dir).then((result: unknown) => {
+				console.log(result);	
+			});
+		}
+	}
+  
   return (
     <main className="w-full h-full">
       <div className="w-full h-full p-4">
