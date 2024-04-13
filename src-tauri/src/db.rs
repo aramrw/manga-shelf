@@ -1,13 +1,9 @@
 use tauri::{AppHandle, Manager};
-use sqlx::{migrate::MigrateDatabase, Row, Sqlite, SqlitePool};
+use sqlx::{migrate::MigrateDatabase,Sqlite, SqlitePool};
 use tokio::sync::Mutex;
+use crate::manga::{migrate_manga_tables};
 
-pub struct MangaFolder {
-    pub id: u32,
-    pub title: String,
-}
-
-pub fn create_database(path: &str, handle: tauri::AppHandle) {
+pub fn create_database(path: &str, handle: AppHandle) {
     tokio::task::block_in_place(move || {
         tauri::async_runtime::block_on(async move {
             println!("Creating database at {}", path);
@@ -17,13 +13,9 @@ pub fn create_database(path: &str, handle: tauri::AppHandle) {
 
             let sqlite_pool = SqlitePool::connect_lazy(path).unwrap();
             handle.manage(Mutex::new(sqlite_pool.clone())); 
-
-            sqlx::query("CREATE TABLE IF NOT EXISTS manga_folder
-            (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL
-            )").execute(&sqlite_pool).await?;
-
+    
+            migrate_manga_tables(&sqlite_pool).await.unwrap();
+            
             Ok::<(), sqlx::Error>(())
         })
     }).unwrap();
