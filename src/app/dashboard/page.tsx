@@ -7,9 +7,9 @@ import { open } from "@tauri-apps/api/dialog";
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 import React, { useState, useEffect } from "react";
-import MangaParent from "./_components/manga-parent";
+import ParentFolder from "./_components/parent-folder";
 
-export type ParentFolder = {
+export type ParentFolderType = {
   id: string;
   title: string;
   full_path: string;
@@ -19,7 +19,7 @@ export type ParentFolder = {
 };
 
 export default function Dashboard() {
-  const [parentFolders, setParentFolders] = useState<ParentFolder[]>(
+  const [parentFolders, setParentFolders] = useState<ParentFolderType[]>(
     [],
   );
 
@@ -42,7 +42,7 @@ export default function Dashboard() {
       asChild: false,
     }).then((result: unknown) => {
       if (result) {
-        const parentFolders: ParentFolder[] = JSON.parse(result as string);
+        const parentFolders: ParentFolderType[] = JSON.parse(result as string);
         setParentFolders((prev) => [...prev, ...parentFolders]);
       }
     });
@@ -51,7 +51,7 @@ export default function Dashboard() {
   useEffect(() => {
     invoke("get_manga_folders").then((result: unknown) => {
       if (result) {
-        const folders: ParentFolder[] = JSON.parse(result as string);
+        const folders: ParentFolderType[] = JSON.parse(result as string);
         for (const f of folders) {
           if (!f.as_child && !parentFolders.includes(f)) {
             setParentFolders((prev) => [...prev, f]);
@@ -75,7 +75,7 @@ export default function Dashboard() {
         </Button>
         <ul className="w-full h-full grid grid-cols-4 gap-2 mt-4">
           {parentFolders.map((folder, index) => {
-            return <MangaParent key={index} parentFolder={folder} />;
+            return <ParentFolder key={index} parentFolder={folder} />;
           })}
         </ul>
       </div>

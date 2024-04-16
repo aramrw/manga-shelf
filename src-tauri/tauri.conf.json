@@ -38,7 +38,8 @@
         "removeDir": false,
         "removeFile": false,
         "renameFile": false,
-        "exists": false
+        "exists": false,
+				"scope": ["**"]
       }
     },
     "bundle": {
