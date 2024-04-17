@@ -76,8 +76,10 @@ export default function ParentFolder({
 			text-center
 			rounded-sm
 			cursor-pointer
-			will-change-transform`,
-        !isExpanded && "hover:scale-[1.02] transition-transform duration-200",
+			will-change-transform
+			shadow-sm
+				`,
+        !isExpanded && "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
       )}
     >
       <div
