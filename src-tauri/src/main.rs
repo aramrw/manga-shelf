@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod db;
+mod global;
 mod manga;
 
 fn main() {
@@ -19,8 +20,16 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![manga::add_manga_folders, manga::get_manga_folders])
+        .invoke_handler(tauri::generate_handler![
+            manga::add_manga_folders,
+            manga::get_manga_folders,
+            manga::update_manga_panel,
+            manga::get_manga_panels,
+            manga::find_last_read_panel,
+            manga::delete_manga_folder,
+            global::set_global_manga,
+            global::get_global_manga,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
