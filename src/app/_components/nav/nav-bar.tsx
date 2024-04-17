@@ -21,7 +21,7 @@ export default function NavBar() {
   };
 
   return (
-    <menu className="bg-primary px-1.5 md:px-30 z-50 top-0 sticky flex h-8 w-full flex-row items-center justify-between border-b-2 shadow-sm lg:px-16 xl:px-36 2xl:px-48 ">
+    <menu className="bg-primary px-1.5 md:px-30 z-50 top-0 sticky flex h-8 w-full flex-row items-center justify-between border-b-2 shadow-sm lg:px-16 xl:px-36 2xl:px-48">
       <ul className="w-full h-full flex flex-row justify-between items-center">
         <li
           onClick={handleGoBack}
