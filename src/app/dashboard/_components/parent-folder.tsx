@@ -28,8 +28,40 @@ export default function ParentFolder({
         console.log(entry);
         if (entry.children?.length === 0) {
           setMangaFolders((prev) => [...prev, entry]);
+    const folderDirPaths: string[] = [];
+    readDir(dir)
+      .then((result: FileEntry[]) => {
+        for (const entry of result) {
+          //console.log(entry);
+					if (entry.path.includes(".jpg") || entry.path.includes(".png")) {
+							return;
+					}
+          folderDirPaths.push(entry.path);
+          if (entry.children?.length === 0) {
+            setMangaFolders((prev) => [...prev, entry]);
+          } else {
+            //setChildFolders((prev) => [...prev, entry as ParentFolderType]);
+          }
         }
-      }
+      })
+      .then(() => {
+        if (folderDirPaths.length > 0) {
+          handleInvokeAddMangaFolders(folderDirPaths);
+        }
+      });
+  };
+
+  const handleMangaClick = (mangaFolderPath: string) => {
+    //console.log("setting global manga");
+    invoke("set_global_manga", { fullPath: mangaFolderPath }).then(() => {
+      router.push("/manga");
+    });
+  };
+
+  const handleInvokeAddMangaFolders = (dirs: string[]) => {
+    invoke("add_manga_folders", {
+      dirPaths: JSON.stringify(dirs),
+      asChild: true,
     });
   };
 
