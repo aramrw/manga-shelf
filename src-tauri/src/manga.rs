@@ -184,7 +184,29 @@ pub async fn update_manga_panel(dir_path: String, handle: AppHandle, is_read: bo
 
 #[tauri::command]
 pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
+    let mut manga_panels: Vec<MangaPanel> = Vec::new();
+    let result = sqlx::query("SELECT * FROM manga_chapter")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    for row in result {
+        let manga_panel = MangaPanel {
+            id: row.get("id"),
+            title: row.get("title"),
+            full_path: row.get("full_path"),
+            is_read: row.get("is_read"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+        };
+
+        manga_panels.push(manga_panel);
+    }
+
+    // return the manga_panel vector back to the frontend
+    manga_panels
 }
 
 fn split_path_parts(path: &str) -> PathParts {
