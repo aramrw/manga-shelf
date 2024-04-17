@@ -30,27 +30,7 @@ pub struct PathParts {
     pub extension: Option<String>,
 }
 
-pub async fn migrate_manga_tables(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS manga_folder
-        (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            full_path TEXT NOT NULL,
-            as_child BOOLEAN DEFAULT 0,
-            created_at TEXT,
-            updated_at TEXT,
-            UNIQUE(full_path)
-        )",
-    )
-    .execute(sqlite_pool)
-    .await?;
-
-    Ok(())
-}
-
 #[tauri::command]
-pub async fn add_manga_folders(dir_paths: String, handle: AppHandle, as_child: bool) -> String {
 pub async fn add_manga_folders(
     dir_paths: String,
     handle: AppHandle,
@@ -245,3 +225,29 @@ fn split_path_parts(path: &str) -> PathParts {
         extension,
     }
 }
+
+#[tauri::command]
+pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> usize {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    let panels: Vec<MangaPanel> =
+        sqlx::query_as("SELECT * FROM manga_panel WHERE full_path LIKE ? || '%'")
+            .bind(chapter_path)
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+
+    //panels.sort_by(|a, b| a.is_read.cmp(&b.is_read));
+
+    let last = panels.iter().rposition(|x| x.is_read).unwrap_or(0) as usize;
+
+    //println!("last panel: {:?} at index {}", panels[last].title, last);
+
+    if last == 0 {
+        0
+    } else {
+        last + 1
+    }
+}
+
+
