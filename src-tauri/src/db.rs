@@ -21,3 +21,23 @@ pub fn create_database(path: &str, handle: AppHandle) {
         })
     }).unwrap();
 }
+
+pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS manga_folder
+        (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            full_path TEXT NOT NULL,
+            as_child BOOLEAN DEFAULT 0,
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(full_path)
+        )",
+    )
+    .execute(sqlite_pool)
+    .await?;
+
+    Ok(())
+}
+
