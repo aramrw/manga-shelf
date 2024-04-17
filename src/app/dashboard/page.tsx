@@ -18,10 +18,17 @@ export type ParentFolderType = {
   updated_at: string;
 };
 
+export type MangaChapterType = {
+  id: string;
+  title: string;
+  full_path: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export default function Dashboard() {
-  const [parentFolders, setParentFolders] = useState<ParentFolderType[]>(
-    [],
-  );
+  const [parentFolders, setParentFolders] = useState<ParentFolderType[]>([]);
 
   const handleAddManga = () => {
     open({
