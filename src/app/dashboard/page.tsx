@@ -1,13 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { PlusCircleIcon } from "@heroicons/react/16/solid";
+import { PlusCircleIcon, TrashIcon } from "@heroicons/react/16/solid";
 import { open } from "@tauri-apps/api/dialog";
-import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 import React, { useState, useEffect } from "react";
 import ParentFolder from "./_components/parent-folder";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export type ParentFolderType = {
   id: string;
@@ -30,7 +34,6 @@ export type MangaChapterType = {
 export default function Dashboard() {
   const [parentFolders, setParentFolders] = useState<ParentFolderType[]>([]);
 
-  const handleAddManga = () => {
   const handleOpenExplorer = () => {
     open({
       title: "Select Manga Folder",
@@ -81,7 +84,7 @@ export default function Dashboard() {
       <div className="w-full h-full p-4">
         <Button
           className="flex flex-row justify-center items-center gap-0.5"
-          onClick={handleAddManga}
+          onClick={handleOpenExplorer}
         >
           <span className="text-center">Add Manga</span>
           <span className="text-center">
@@ -90,7 +93,22 @@ export default function Dashboard() {
         </Button>
         <ul className="w-full h-full grid grid-cols-4 gap-2 mt-4">
           {parentFolders.map((folder, index) => {
-            return <ParentFolder key={index} parentFolder={folder} />;
+            return (
+              <ContextMenu key={index}>
+                <ContextMenuTrigger>
+                  <ParentFolder key={index} parentFolder={folder} />
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    className="font-semibold flex flex-row items-center gap-0.5 cursor-pointer"
+                    onClick={() => handleInvokeDeleteParentFolder(folder.id, folder.full_path)}
+                  >
+                    <span>Delete</span>
+                    <TrashIcon className="h-4 w-auto" />
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
+            );
           })}
         </ul>
       </div>
