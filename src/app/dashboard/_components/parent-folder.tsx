@@ -1,9 +1,10 @@
+"use client";
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { ParentFolderType } from "../page";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ParentFolder({
   parentFolder,
@@ -13,21 +14,17 @@ export default function ParentFolder({
   const [childFolders, setChildFolders] = useState<ParentFolderType[]>([]);
   const [mangaFolders, setMangaFolders] = useState<FileEntry[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
     handleReadDirectories(parentFolder.full_path);
   }, []);
 
-  useEffect(() => {
-    console.log(mangaFolders);
-  }, [mangaFolders]);
+  // useEffect(() => {
+  //   console.log(mangaFolders);
+  // }, [mangaFolders]);
 
   const handleReadDirectories = (dir: string) => {
-    readDir(dir).then((result: FileEntry[]) => {
-      for (const entry of result) {
-        console.log(entry);
-        if (entry.children?.length === 0) {
-          setMangaFolders((prev) => [...prev, entry]);
     const folderDirPaths: string[] = [];
     readDir(dir)
       .then((result: FileEntry[]) => {
@@ -87,7 +84,13 @@ export default function ParentFolder({
         className={
           "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary"
         }
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          if (mangaFolders.length === 0 && childFolders.length === 0) {
+            handleMangaClick(parentFolder.full_path);
+          } else {
+            setIsExpanded(!isExpanded);
+          }
+        }}
       >
         <h1 className="font-bold">{parentFolder.title}</h1>
       </div>
@@ -100,12 +103,13 @@ export default function ParentFolder({
           </div>
           <div className="w-full h-full flex flex-col justify-center items-center bg-secondary">
             {mangaFolders.map((mangaFolder, index) => (
-              <Link
+              <h1
                 key={index}
                 className="py-2 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100"
+                onClick={() => handleMangaClick(mangaFolder.path)}
               >
                 {mangaFolder.name}
-              </Link>
+              </h1>
             ))}
           </div>
         </>
