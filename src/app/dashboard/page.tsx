@@ -57,6 +57,12 @@ export default function Dashboard() {
     });
   };
 
+  const handleInvokeDeleteParentFolder = (id: string, path: string) => {
+    invoke("delete_manga_folder", { id, path }).then(() => {
+      setParentFolders((prev) => prev.filter((f) => f.id !== id));
+    });
+  };
+
   useEffect(() => {
     invoke("get_manga_folders").then((result: unknown) => {
       if (result) {
