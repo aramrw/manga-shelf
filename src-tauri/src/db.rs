@@ -41,3 +41,22 @@ pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), 
     Ok(())
 }
 
+pub async fn migrate_global_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS global_manga
+        (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            full_path TEXT NOT NULL,
+            as_child BOOLEAN DEFAULT 0,
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(full_path)
+        )",
+    )
+    .execute(sqlite_pool)
+    .await?;
+
+    Ok(())
+}
+
