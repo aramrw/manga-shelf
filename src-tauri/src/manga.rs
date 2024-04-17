@@ -13,6 +13,16 @@ pub struct MangaFolder {
     pub updated_at: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
+pub struct MangaPanel {
+    pub id: String,
+    pub title: String,
+    pub full_path: String,
+    pub is_read: bool,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
 #[allow(dead_code)]
 pub struct PathParts {
     pub parent: String,
@@ -119,6 +129,55 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
 
     // return the manga_folders vector back to the frontend
     serde_json::to_string(&manga_folders).unwrap()
+pub async fn update_manga_panel(dir_path: String, handle: AppHandle, is_read: bool) -> MangaPanel {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    let uuid = uuid::Uuid::new_v4().to_string();
+    let split_path = split_path_parts(&dir_path);
+
+    // create a MangaFolder struct to push into the manga_folders vector
+    let manga_panel = MangaPanel {
+        id: uuid.clone(),
+        title: split_path.file_name.clone(),
+        full_path: dir_path.clone(),
+        is_read,
+        created_at: "".to_string(),
+        updated_at: "".to_string(),
+    };
+
+    sqlx::query(
+        "INSERT INTO manga_panel  
+        (
+            id, 
+            title, 
+            full_path, 
+            is_read,
+            created_at, 
+            updated_at
+        ) 
+        VALUES
+        (
+            ?, ?, ?, ?,
+            datetime('now'), datetime('now')
+        )
+        ON CONFLICT (full_path) DO UPDATE SET
+            is_read = excluded.is_read,
+            updated_at = datetime('now')",
+    )
+    .bind(uuid)
+    .bind(split_path.file_name)
+    .bind(&dir_path)
+    .bind(is_read)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // return the manga_folders vector back to the frontend
+    manga_panel
+}
+
+#[tauri::command]
+pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
 
 }
 
