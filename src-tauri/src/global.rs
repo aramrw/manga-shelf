@@ -9,6 +9,51 @@ pub struct GlobalError {
     message: String,
 }
 
+#[tauri::command]
+pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), GlobalError>  {
+    // This function will be called from the fe
+    // and will update the current manga in the global scope
+    // so that it can be accessed from anywhere in the app
+    
+    //println!("Setting global manga: {}", full_path);
+
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    let current_manga = get_manga_by_path(full_path, &pool).await;
+
+    sqlx::query("DELETE FROM global_manga")
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    sqlx::query(
+        "INSERT INTO global_manga 
+        (
+            id, 
+            title, 
+            full_path, 
+            as_child,
+            created_at, 
+            updated_at
+        ) 
+        VALUES
+        (
+            ?, ?, ?, ?, ?, ?
+        )",
+    )
+    .bind(current_manga.id)
+    .bind(current_manga.title)
+    .bind(current_manga.full_path)
+    .bind(current_manga.as_child)
+    .bind(current_manga.created_at)
+    .bind(current_manga.updated_at)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn get_global_manga(handle: AppHandle) -> MangaFolder {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
