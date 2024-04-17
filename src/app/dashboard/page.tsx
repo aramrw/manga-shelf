@@ -81,12 +81,12 @@ export default function Dashboard() {
 
   return (
     <main className="w-full h-full">
-      <div className="w-full h-full p-4">
+      <div className="w-full h-full p-4 lg:px-16 xl:px-36 2xl:px-48">
         <Button
           className="flex flex-row justify-center items-center gap-0.5"
           onClick={handleOpenExplorer}
         >
-          <span className="text-center">Add Manga</span>
+          <span className="text-center text-base">Add Manga</span>
           <span className="text-center">
             <PlusCircleIcon className="h-3 w-auto" />
           </span>
