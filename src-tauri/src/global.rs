@@ -9,6 +9,24 @@ pub struct GlobalError {
     message: String,
 }
 
+pub async fn get_global_manga(handle: AppHandle) -> MangaFolder {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    let result = sqlx::query("SELECT * FROM global_manga")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    MangaFolder {
+        id: result.get("id"),
+        title: result.get("title"),
+        full_path: result.get("full_path"),
+        as_child: result.get("as_child"),
+        created_at: result.get("created_at"),
+        updated_at: result.get("updated_at"),
+    }
+}
+
 pub async fn get_manga_by_path(full_path: &str, pool: &SqlitePool) -> MangaFolder {
     //println!("Getting manga by path: {}", full_path);
     let result = sqlx::query("SELECT * FROM manga_folder WHERE full_path = ?")
