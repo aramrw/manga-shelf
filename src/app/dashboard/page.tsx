@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [parentFolders, setParentFolders] = useState<ParentFolderType[]>([]);
 
   const handleAddManga = () => {
+  const handleOpenExplorer = () => {
     open({
       title: "Select Manga Folder",
       directory: true,
@@ -38,19 +39,20 @@ export default function Dashboard() {
       recursive: true,
     }).then((result: any) => {
       if (result) {
-        handleReadDirectories(result as string[]);
+        invokeAddMangaFolders(result as string[]);
       }
     });
   };
 
-  const handleReadDirectories = (dirs: string[]) => {
+  const invokeAddMangaFolders = (dirs: string[]) => {
     invoke("add_manga_folders", {
       dirPaths: JSON.stringify(dirs),
       asChild: false,
     }).then((result: unknown) => {
       if (result) {
-        const parentFolders: ParentFolderType[] = JSON.parse(result as string);
-        setParentFolders((prev) => [...prev, ...parentFolders]);
+        const currentParentFolders: ParentFolderType[] =
+          result as ParentFolderType[];
+        setParentFolders((prev) => [...prev, ...currentParentFolders]);
       }
     });
   };
