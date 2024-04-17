@@ -105,7 +105,9 @@ export default function ParentFolder({
             {mangaFolders.map((mangaFolder, index) => (
               <h1
                 key={index}
-                className="py-2 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100"
+                className={cn("py-2 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100",
+								index === 0 && "border-t-0" 
+								)}
                 onClick={() => handleMangaClick(mangaFolder.path)}
               >
                 {mangaFolder.name}
