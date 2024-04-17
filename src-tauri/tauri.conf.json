@@ -1,94 +1,106 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
-  "build": {
-    "beforeBuildCommand": "bun run build",
-    "beforeDevCommand": "bun run dev",
-    "devPath": "http://localhost:3000",
-    "distDir": "../out"
-  },
-  "package": {
-    "productName": "manga-shelf",
-    "version": "0.1.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "execute": false,
-        "open": true,
-        "scope": [],
-        "sidecar": false
-      },
-      "dialog": {
-        "all": false,
-        "ask": false,
-        "confirm": false,
-        "message": false,
-        "open": true,
-        "save": false
-      },
-      "fs": {
-        "all": false,
-        "readFile": true,
-        "writeFile": false,
-        "readDir": true,
-        "copyFile": false,
-        "createDir": false,
-        "removeDir": false,
-        "removeFile": false,
-        "renameFile": false,
-        "exists": false,
-				"scope": ["**"]
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.mangashelf.dev",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "manga-shelf",
-        "width": 800
-      }
-    ]
-  }
+	"$schema": "../node_modules/@tauri-apps/cli/schema.json",
+	"build": {
+		"beforeBuildCommand": "bun run build",
+		"beforeDevCommand": "bun run dev",
+		"devPath": "http://localhost:3000",
+		"distDir": "../out"
+	},
+	"package": {
+		"productName": "manga-shelf",
+		"version": "0.1.0"
+	},
+	"tauri": {
+		"allowlist": {
+			"all": false,
+			"shell": {
+				"all": false,
+				"execute": false,
+				"open": true,
+				"scope": [],
+				"sidecar": false
+			},
+			"dialog": {
+				"all": false,
+				"ask": false,
+				"confirm": false,
+				"message": false,
+				"open": true,
+				"save": false
+			},
+			"fs": {
+				"all": false,
+				"readFile": true,
+				"writeFile": false,
+				"readDir": true,
+				"copyFile": false,
+				"createDir": false,
+				"removeDir": false,
+				"removeFile": false,
+				"renameFile": false,
+				"exists": false,
+				"scope": [
+					"**"
+				]
+			},
+			"path": {
+				"all": true
+			},
+			"protocol": {
+				"all": false,
+				"asset": true,
+				"assetScope": [
+					"**"
+				]
+			}
+		},
+		"bundle": {
+			"active": true,
+			"category": "DeveloperTool",
+			"copyright": "",
+			"deb": {
+				"depends": []
+			},
+			"externalBin": [],
+			"icon": [
+				"icons/32x32.png",
+				"icons/128x128.png",
+				"icons/128x128@2x.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			],
+			"identifier": "com.mangashelf.dev",
+			"longDescription": "",
+			"macOS": {
+				"entitlements": null,
+				"exceptionDomain": "",
+				"frameworks": [],
+				"providerShortName": null,
+				"signingIdentity": null
+			},
+			"resources": [],
+			"shortDescription": "",
+			"targets": "all",
+			"windows": {
+				"certificateThumbprint": null,
+				"digestAlgorithm": "sha256",
+				"timestampUrl": ""
+			}
+		},
+		"security": {
+			"csp": null
+		},
+		"updater": {
+			"active": false
+		},
+		"windows": [
+			{
+				"fullscreen": false,
+				"height": 600,
+				"resizable": true,
+				"title": "manga-shelf",
+				"width": 800
+			}
+		]
+	}
 }
