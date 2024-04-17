@@ -51,16 +51,20 @@ pub async fn migrate_manga_tables(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
 
 #[tauri::command]
 pub async fn add_manga_folders(dir_paths: String, handle: AppHandle, as_child: bool) -> String {
+pub async fn add_manga_folders(
+    dir_paths: String,
+    handle: AppHandle,
+    as_child: bool,
+) -> Vec<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
     let parsed_paths = serde_json::from_str::<Vec<String>>(&dir_paths).unwrap();
-    
+
     // create a MangaFolder vector to return back to the frontend
     let mut manga_folders: Vec<MangaFolder> = Vec::new();
 
     for path in parsed_paths {
         let uuid = uuid::Uuid::new_v4().to_string();
         let split_path = split_path_parts(&path);
-
 
         // create a MangaFolder struct to push into the manga_folders vector
         let manga_folder = MangaFolder {
@@ -100,18 +104,18 @@ pub async fn add_manga_folders(dir_paths: String, handle: AppHandle, as_child: b
     }
 
     // return the manga_folders vector back to the frontend
-    serde_json::to_string(&manga_folders).unwrap()
+    manga_folders
 }
 
 #[tauri::command]
-pub async fn get_manga_folders(handle: AppHandle) -> String { 
-   let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone(); 
+pub async fn get_manga_folders(handle: AppHandle) -> String {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     let mut manga_folders: Vec<MangaFolder> = Vec::new();
-    let result = sqlx::query("SELECT * FROM manga_folder") 
-         .fetch_all(&pool)
-         .await 
-         .unwrap();
+    let result = sqlx::query("SELECT * FROM manga_folder")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
 
     for row in result {
         let manga_folder = MangaFolder {
@@ -126,9 +130,11 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
         manga_folders.push(manga_folder);
     }
 
-
     // return the manga_folders vector back to the frontend
     serde_json::to_string(&manga_folders).unwrap()
+}
+
+#[tauri::command]
 pub async fn update_manga_panel(dir_path: String, handle: AppHandle, is_read: bool) -> MangaPanel {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
