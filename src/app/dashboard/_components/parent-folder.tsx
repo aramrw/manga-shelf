@@ -30,9 +30,9 @@ export default function ParentFolder({
       .then((result: FileEntry[]) => {
         for (const entry of result) {
           //console.log(entry);
-					if (entry.path.includes(".jpg") || entry.path.includes(".png")) {
-							return;
-					}
+          if (entry.path.includes(".jpg") || entry.path.includes(".png")) {
+            return;
+          }
           folderDirPaths.push(entry.path);
           if (entry.children?.length === 0) {
             setMangaFolders((prev) => [...prev, entry]);
@@ -92,7 +92,7 @@ export default function ParentFolder({
           }
         }}
       >
-        <h1 className="font-bold">{parentFolder.title}</h1>
+        <h1 className="font-bold w-full overflow-hidden text-nowrap">{parentFolder.title}</h1>
       </div>
       {isExpanded && (
         <>
@@ -105,9 +105,10 @@ export default function ParentFolder({
             {mangaFolders.map((mangaFolder, index) => (
               <h1
                 key={index}
-                className={cn("py-2 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden overflow-ellipsis w-full",
-								index === 0 && "border-t-0" 
-								)}
+                className={cn(
+                  "py-2 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
+                  index === 0 && "border-t-0",
+                )}
                 onClick={() => handleMangaClick(mangaFolder.path)}
               >
                 {mangaFolder.name}
