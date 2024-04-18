@@ -9,6 +9,7 @@ pub struct MangaFolder {
     pub title: String,
     pub full_path: String,
     pub as_child: bool,
+    pub is_expanded: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -31,10 +32,11 @@ pub struct PathParts {
 }
 
 #[tauri::command]
-pub async fn add_manga_folders(
+pub async fn update_manga_folders(
     dir_paths: String,
     handle: AppHandle,
     as_child: bool,
+    is_expanded: bool,
 ) -> Vec<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
     let parsed_paths = serde_json::from_str::<Vec<String>>(&dir_paths).unwrap();
@@ -52,6 +54,7 @@ pub async fn add_manga_folders(
             title: split_path.file_name.clone(),
             full_path: path.clone(),
             as_child,
+            is_expanded,
             created_at: "".to_string(),
             updated_at: "".to_string(),
         };
@@ -59,25 +62,32 @@ pub async fn add_manga_folders(
         manga_folders.push(manga_folder);
 
         sqlx::query(
-            "INSERT OR IGNORE INTO manga_folder
+            "INSERT INTO manga_folder 
         (
             id, 
             title, 
             full_path, 
             as_child,
+            is_expanded,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?,
+            ?, ?, ?, ?, ?,
             datetime('now'), datetime('now')
-        )",
+        )
+        ON CONFLICT (full_path) DO UPDATE SET
+        as_child = excluded.as_child,
+        is_expanded = excluded.is_expanded,
+        updated_at = datetime('now')
+        ",
         )
         .bind(uuid)
         .bind(split_path.file_name)
         .bind(path)
         .bind(as_child)
+        .bind(is_expanded)
         .execute(&pool)
         .await
         .unwrap();
@@ -103,6 +113,7 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
             title: row.get("title"),
             full_path: row.get("full_path"),
             as_child: row.get("as_child"),
+            is_expanded: row.get("is_expanded"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         };
@@ -115,7 +126,6 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
 }
 
 #[tauri::command]
-pub async fn update_manga_panel(dir_path: String, handle: AppHandle, is_read: bool) -> MangaPanel {
 pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: bool) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
@@ -151,17 +161,15 @@ pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: b
         ON CONFLICT (full_path) DO UPDATE SET
             is_read = excluded.is_read,
             updated_at = datetime('now')",
-    )
-    .bind(uuid)
-    .bind(split_path.file_name)
-    .bind(&dir_path)
-    .bind(is_read)
-    .execute(&pool)
-    .await
-    .unwrap();
-
-    // return the manga_folders vector back to the frontend
-    manga_panel
+        )
+        .bind(uuid)
+        .bind(split_path.file_name)
+        .bind(&path)
+        .bind(is_read)
+        .execute(&pool)
+        .await
+        .unwrap();
+    }
 }
 
 #[tauri::command]
@@ -251,5 +259,3 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
         last + 1
     }
 }
-
-

@@ -21,7 +21,7 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            manga::add_manga_folders,
+            manga::update_manga_folders,
             manga::get_manga_folders,
             manga::update_manga_panel,
             manga::get_manga_panels,
