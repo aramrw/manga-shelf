@@ -32,18 +32,20 @@ pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), 
             title, 
             full_path, 
             as_child,
+            is_expanded,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?
         )",
     )
     .bind(current_manga.id)
     .bind(current_manga.title)
     .bind(current_manga.full_path)
     .bind(current_manga.as_child)
+    .bind(current_manga.is_expanded)
     .bind(current_manga.created_at)
     .bind(current_manga.updated_at)
     .execute(&pool)
@@ -67,6 +69,7 @@ pub async fn get_global_manga(handle: AppHandle) -> MangaFolder {
         title: result.get("title"),
         full_path: result.get("full_path"),
         as_child: result.get("as_child"),
+        is_expanded: result.get("is_expanded"),
         created_at: result.get("created_at"),
         updated_at: result.get("updated_at"),
     }
@@ -85,6 +88,7 @@ pub async fn get_manga_by_path(full_path: &str, pool: &SqlitePool) -> MangaFolde
         title: result.get("title"),
         full_path: result.get("full_path"),
         as_child: result.get("as_child"),
+        is_expanded: result.get("is_expanded"),
         created_at: result.get("created_at"),
         updated_at: result.get("updated_at"),
     }
