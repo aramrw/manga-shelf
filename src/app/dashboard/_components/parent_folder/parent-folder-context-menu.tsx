@@ -39,7 +39,7 @@ export default function ParentFolderContextMenu({
 						handleInvokeShowInFolder(folder.full_path)
           }
         >
-          <span>Show In Folder</span>
+          <span>Show In Explorer</span>
           <FolderIcon className="h-4 w-auto" />
         </ContextMenuItem>
         <ContextMenuSeparator />
@@ -49,7 +49,7 @@ export default function ParentFolderContextMenu({
             handleInvokeDeleteParentFolder(folder.id, folder.full_path)
           }
         >
-          <span>Delete</span>
+          <span>Delete Folder</span>
           <TrashIcon className="h-4 w-auto" />
         </ContextMenuItem>
       </ContextMenuContent>
