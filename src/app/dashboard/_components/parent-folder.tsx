@@ -5,6 +5,11 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 export default function ParentFolder({
   parentFolder,
@@ -13,7 +18,9 @@ export default function ParentFolder({
 }) {
   const [childFolders, setChildFolders] = useState<ParentFolderType[]>([]);
   const [mangaFolders, setMangaFolders] = useState<FileEntry[]>([]);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(
+    parentFolder.is_expanded,
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -38,9 +45,9 @@ export default function ParentFolder({
       readDir(dir, { recursive: true })
         .then((result: FileEntry[]) => {
           for (const entry of result) {
-						if (entry.path.includes(".jpg")) {
-							return;
-						}
+            if (entry.path.includes(".jpg")) {
+              return;
+            }
             folderDirPaths.push(entry.path);
             // if the entry is a directory that holds images
             console.log(entry);
@@ -60,9 +67,8 @@ export default function ParentFolder({
           }
         });
     } catch (error) {
-			console.error(error);
-		}
-   
+      console.error(error);
+    }
   };
 
   const handleMangaClick = (mangaFolderPath: string) => {
@@ -73,9 +79,10 @@ export default function ParentFolder({
   };
 
   const handleInvokeAddMangaFolders = (dirs: string[]) => {
-    invoke("add_manga_folders", {
+    invoke("update_manga_folders", {
       dirPaths: JSON.stringify(dirs),
       asChild: true,
+      isExpanded: isExpanded,
     }).then((res) => {
       setChildFolders(res as ParentFolderType[]);
     });
@@ -100,7 +107,7 @@ export default function ParentFolder({
 			shadow-sm
 				`,
         !isExpanded &&
-        "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
+          "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
         parentFolder.as_child && "p-0 text-xs",
       )}
     >
@@ -113,6 +120,11 @@ export default function ParentFolder({
             handleMangaClick(parentFolder.full_path);
           } else {
             setIsExpanded(!isExpanded);
+            invoke("update_manga_folders", {
+              dirPaths: JSON.stringify([parentFolder.full_path]),
+              asChild: false,
+              isExpanded: !isExpanded,
+            });
           }
         }}
       >
@@ -129,16 +141,6 @@ export default function ParentFolder({
           </div>
           <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
             {mangaFolders.map((mangaFolder, index) => (
-              <h1
-                key={index}
-                className={cn(
-                  "py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
-                  index === 0 && "border-t-0",
-                )}
-                onClick={() => handleMangaClick(mangaFolder.path)}
-              >
-                {mangaFolder.name}
-              </h1>
               <HoverCard>
                 <HoverCardTrigger className="w-full h-full">
                   <h1
