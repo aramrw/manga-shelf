@@ -200,12 +200,12 @@ pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
 }
 
 #[tauri::command]
-pub async fn delete_manga_folder(id: String, path: String, handle: AppHandle) {
+pub async fn delete_manga_folder(id: String, path: String, handle: AppHandle, all_data: bool) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     // delete any folders that contain the main folder module_path!()
     sqlx::query("DELETE FROM manga_folder WHERE full_path LIKE ? || '%'")
-        .bind(path)
+        .bind(&path)
         .execute(&pool)
         .await
         .unwrap();
@@ -216,6 +216,15 @@ pub async fn delete_manga_folder(id: String, path: String, handle: AppHandle) {
         .execute(&pool)
         .await
         .unwrap();
+
+    // delete all panels that contain the main folder's module_path!
+    if all_data {
+        sqlx::query("DELETE FROM manga_panel WHERE full_path LIKE ? || '%'")
+            .bind(&path)
+            .execute(&pool)
+            .await
+            .unwrap();
+    }
 }
 
 // helper functions
