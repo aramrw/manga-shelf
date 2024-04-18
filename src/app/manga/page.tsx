@@ -47,7 +47,7 @@ export default function Manga() {
 
   // previous panels
   const handlePreviousPanel = () => {
-    if (currentPanelIndex - 2 > 0) {
+    if (currentPanelIndex - 2 > - 1) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([
           mangaPanels[currentPanelIndex - 1].path,
