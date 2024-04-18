@@ -67,7 +67,7 @@ export default function Dashboard() {
           className="flex flex-row justify-center items-center gap-0.5 shadow-sm"
           onClick={handleOpenExplorer}
         >
-          <span className="text-center text-base">Add Manga</span>
+          <span className="text-center">Add Manga</span>
           <span className="text-center">
             <PlusCircleIcon className="h-3 w-auto" />
           </span>
