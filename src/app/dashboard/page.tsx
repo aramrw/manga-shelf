@@ -18,18 +18,11 @@ export type ParentFolderType = {
   title: string;
   full_path: string;
   as_child: boolean;
+	is_expanded: boolean;
   created_at: string;
   updated_at: string;
 };
 
-export type MangaChapterType = {
-  id: string;
-  title: string;
-  full_path: string;
-  is_read: boolean;
-  created_at: string;
-  updated_at: string;
-};
 
 export default function Dashboard() {
   const [parentFolders, setParentFolders] = useState<ParentFolderType[]>([]);
@@ -48,9 +41,10 @@ export default function Dashboard() {
   };
 
   const invokeAddMangaFolders = (dirs: string[]) => {
-    invoke("add_manga_folders", {
+    invoke("update_manga_folders", {
       dirPaths: JSON.stringify(dirs),
       asChild: false,
+			isExpanded: false,
     }).then((result: unknown) => {
       if (result) {
         const currentParentFolders: ParentFolderType[] =
