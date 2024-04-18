@@ -3,14 +3,10 @@
 import Link from "next/link";
 import {
   ArrowLeftStartOnRectangleIcon,
-  ChartBarIcon,
-  ChartBarSquareIcon,
-  Cog6ToothIcon,
-  CogIcon,
 } from "@heroicons/react/16/solid";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { ArrowLeftFromLine, BarChart, BarChart3, MoveLeft } from "lucide-react";
+import { BarChart3, } from "lucide-react";
 
 export default function NavBar() {
   const router = useRouter();
@@ -38,7 +34,7 @@ export default function NavBar() {
         <ul className="flex flex-row gap-1">
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
             <Link href="/">
-              <BarChart3 className="w-5 h-auto" />
+              <BarChart3 className="w-5 h-auto" strokeWidth={2.4} />
             </Link>
           </li>
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
@@ -47,9 +43,9 @@ export default function NavBar() {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                strokeWidth={1.7}
                 stroke="currentColor"
-                className="w-[1.3rem] h-auto"
+                className="w-[1.3rem] h-auto hover:animate-spin transition-all duration-500 ease-in-out"
               >
                 <path
                   strokeLinecap="round"
