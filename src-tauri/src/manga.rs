@@ -286,9 +286,5 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
 
     //println!("last panel: {:?} at index {}", panels[last].title, last);
 
-    if last == 0 {
-        0
-    } else {
-        last + 1
-    }
+    last 
 }

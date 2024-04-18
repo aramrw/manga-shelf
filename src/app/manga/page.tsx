@@ -22,6 +22,12 @@ export default function Manga() {
         readDir(manga.full_path).then((result) => {
           if (result) {
             setMangaPanels(result);
+						// always update the first panel as read because
+						// the handles only invoke starting from the second panel
+						invoke("update_manga_panel", {
+							dirPaths: JSON.stringify([result[0].path]),
+							isRead: true,
+						});
           }
         });
       }
@@ -39,7 +45,7 @@ export default function Manga() {
       invoke("find_last_read_panel", {
         chapterPath: currentManga.full_path,
       }).then((lastReadPanelIndex: unknown) => {
-        console.log(lastReadPanelIndex);
+        console.log("previous:", lastReadPanelIndex);
         setCurrentPanelIndex(lastReadPanelIndex as number);
       });
     }
@@ -47,7 +53,19 @@ export default function Manga() {
 
   // previous panels
   const handlePreviousPanel = () => {
-    if (currentPanelIndex - 2 > - 1) {
+		// if the current panel index is 1, it will set it to 0
+		if (currentPanelIndex - 2 === -1) {
+			invoke("update_manga_panel", {
+        dirPaths: JSON.stringify([
+          mangaPanels[currentPanelIndex - 1].path,
+          mangaPanels[currentPanelIndex].path,
+        ]),
+        isRead: false,
+      });
+
+			setCurrentPanelIndex(0);
+
+		} else if (currentPanelIndex - 2 > - 1) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([
           mangaPanels[currentPanelIndex - 1].path,
@@ -61,7 +79,7 @@ export default function Manga() {
   };
 
   const handlePreviousSinglePanel = () => {
-    if (currentPanelIndex - 1 > 0) {
+    if (currentPanelIndex - 1 > -1) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([mangaPanels[currentPanelIndex].path]),
         isRead: false,
@@ -75,8 +93,8 @@ export default function Manga() {
     if (currentPanelIndex < mangaPanels.length - 3) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([
-          mangaPanels[currentPanelIndex].path,
           mangaPanels[currentPanelIndex + 1].path,
+          mangaPanels[currentPanelIndex + 2].path,
         ]),
         isRead: true,
       });
