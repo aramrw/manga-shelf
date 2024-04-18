@@ -20,6 +20,8 @@ pub struct MangaPanel {
     pub title: String,
     pub full_path: String,
     pub is_read: bool,
+    pub width: u16,
+    pub height: u16,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -46,6 +48,7 @@ pub async fn update_manga_folders(
 
     for path in parsed_paths {
         let uuid = uuid::Uuid::new_v4().to_string();
+        // gets the parent, file name, and extension of the path
         let split_path = split_path_parts(&path);
 
         // create a MangaFolder struct to push into the manga_folders vector
@@ -128,20 +131,26 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
 #[tauri::command]
 pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: bool) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    //let mut manga_panels: Vec<MangaPanel> = Vec::new();
 
     for path in serde_json::from_str::<Vec<String>>(&dir_paths).unwrap() {
         let uuid = uuid::Uuid::new_v4().to_string();
+        // gets the parent, file name, and extension of the path
         let split_path = split_path_parts(&path);
+        // get the width and height of the panel image
+        let (width, height) = get_panel_image_dimensions(&path);
 
-        // create a MangaFolder struct to push into the manga_folders vector
-        // let manga_panel = MangaPanel {
+        // create a MangaFolder struct to push into the panels vector
+        // manga_panels.push(MangaPanel {
         //     id: uuid.clone(),
         //     title: split_path.file_name.clone(),
         //     full_path: path.clone(),
         //     is_read,
+        //     width,
+        //     height,
         //     created_at: "".to_string(),
         //     updated_at: "".to_string(),
-        // };
+        // });
 
         sqlx::query(
             "INSERT INTO manga_panel  
@@ -150,12 +159,14 @@ pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: b
             title, 
             full_path, 
             is_read,
+            width,
+            height,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
             datetime('now'), datetime('now')
         )
         ON CONFLICT (full_path) DO UPDATE SET
@@ -166,10 +177,14 @@ pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: b
         .bind(split_path.file_name)
         .bind(&path)
         .bind(is_read)
+        .bind(width)
+        .bind(height)
         .execute(&pool)
         .await
         .unwrap();
     }
+
+    //manga_panels
 }
 
 #[tauri::command]
@@ -188,6 +203,8 @@ pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
             title: row.get("title"),
             full_path: row.get("full_path"),
             is_read: row.get("is_read"),
+            width: row.get("width"),
+            height: row.get("height"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         };
@@ -242,6 +259,13 @@ fn split_path_parts(path: &str) -> PathParts {
         parent,
         file_name,
         extension,
+    }
+}
+
+fn get_panel_image_dimensions(panel_image_path: &str) -> (u16, u16) {
+    match imagesize::size(panel_image_path) {
+        Ok(size) => (size.width as u16, size.height as u16),
+        Err(_) => (0, 0),
     }
 }
 
