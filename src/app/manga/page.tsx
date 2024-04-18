@@ -98,6 +98,7 @@ export default function Manga() {
     <main className="w-full h-full flex flex-col justify-center items-center">
       {currentManga && (
         <MangaHeader
+					key={`${currentManga.title}-manga-header`}
           currentManga={currentManga}
           handleNextPanel={handleNextPanel}
           handleNextSinglePanel={handleNextSinglePanel}
@@ -110,11 +111,13 @@ export default function Manga() {
           currentPanelIndex > -1 && (
             <>
               <MangaPanel
+								key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
                 currentPanel={mangaPanels[currentPanelIndex + 1]}
                 secondPanel={true}
               />
 
               <MangaPanel
+								key={`${mangaPanels[currentPanelIndex].path}-manga-panel-current`}
                 currentPanel={mangaPanels[currentPanelIndex]}
                 secondPanel={false}
               />

@@ -76,7 +76,7 @@ export default function Dashboard() {
           {parentFolders.map((folder, index) => {
             return (
               <ParentFolderContextMenu
-                key={index}
+                key={`${folder.title}-${index}`}
                 folder={folder}
                 setParentFolders={setParentFolders}
               />

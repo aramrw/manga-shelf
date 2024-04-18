@@ -30,7 +30,7 @@ export default function ParentFolderContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <ParentFolder parentFolder={folder} />
+        <ParentFolder key={folder.id} parentFolder={folder} />
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem

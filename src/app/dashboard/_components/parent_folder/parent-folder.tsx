@@ -107,8 +107,9 @@ export default function ParentFolder({
 			shadow-sm
 				`,
         !isExpanded &&
-          "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
+        "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
         parentFolder.as_child && "p-0 text-xs",
+        mangaFolders.length === 0 && childFolders.length === 0 && "bg-accent-foreground"
       )}
     >
       <div
@@ -136,25 +137,29 @@ export default function ParentFolder({
         <>
           <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
             {childFolders.map((childFolder, index) => (
-              <ParentFolder key={index} parentFolder={childFolder} />
+              <ParentFolder
+                key={`${childFolder.id}-${index}`}
+                parentFolder={childFolder}
+              />
             ))}
           </div>
           <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
             {mangaFolders.map((mangaFolder, index) => (
-              <HoverCard>
+              <HoverCard key={`${mangaFolder.path}-${index}`}>
                 <HoverCardTrigger className="w-full h-full">
                   <h1
-                    key={index}
                     className={cn(
-                      "py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
+                      "bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
                       index === 0 && "border-t-0",
                     )}
                     onClick={() => handleMangaClick(mangaFolder.path)}
                   >
-										{mangaFolder.name}
-									</h1>
+                    {mangaFolder.name}
+                  </h1>
                 </HoverCardTrigger>
-                <HoverCardContent className="z-50 w-fit h-fit p-1 font-semibold text-xs">{mangaFolder.name}</HoverCardContent>
+                <HoverCardContent className="z-50 w-fit h-fit p-1 font-semibold text-xs">
+                  {mangaFolder.name}
+                </HoverCardContent>
               </HoverCard>
             ))}
           </div>
