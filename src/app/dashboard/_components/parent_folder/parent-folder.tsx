@@ -50,7 +50,7 @@ export default function ParentFolder({
             }
             folderDirPaths.push(entry.path);
             // if the entry is a directory that holds images
-            console.log(entry);
+            //console.log(entry);
             if (
               entry.children &&
               (entry.children[0].path.includes(".jpeg") ||
