@@ -3,6 +3,7 @@
 mod db;
 mod global;
 mod manga;
+mod misc;
 
 fn main() {
     tauri::Builder::default()
@@ -29,6 +30,7 @@ fn main() {
             manga::delete_manga_folder,
             global::set_global_manga,
             global::get_global_manga,
+            misc::show_in_folder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
