@@ -139,6 +139,21 @@ export default function ParentFolder({
               >
                 {mangaFolder.name}
               </h1>
+              <HoverCard>
+                <HoverCardTrigger className="w-full h-full">
+                  <h1
+                    key={index}
+                    className={cn(
+                      "py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
+                      index === 0 && "border-t-0",
+                    )}
+                    onClick={() => handleMangaClick(mangaFolder.path)}
+                  >
+										{mangaFolder.name}
+									</h1>
+                </HoverCardTrigger>
+                <HoverCardContent className="z-50 w-fit h-fit p-1 font-semibold text-xs">{mangaFolder.name}</HoverCardContent>
+              </HoverCard>
             ))}
           </div>
         </>
