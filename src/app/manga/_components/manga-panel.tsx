@@ -2,7 +2,6 @@
 
 import { FileEntry } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { useEffect, useState } from "react";
 
 export default function MangaPanel({
   currentPanel,
@@ -14,11 +13,11 @@ export default function MangaPanel({
   return (
     <div className="w-full h-full flex flex-col justify-center items-center py-2">
       {secondPanel ? (
-        <h1 className="font-bold fixed left-1 top-[75px] text-xs">
+        <h1 className="font-bold fixed left-2 bottom-1 text-xs text-zinc-300">
 					{currentPanel.name}
         </h1>
       ) : (
-        <h1 className="font-bold fixed right-1 top-[75px] text-xs">
+        <h1 className="font-bold fixed right-2 bottom-1 text-xs text-zinc-300">
           {currentPanel.name}
         </h1>
       )}
@@ -27,9 +26,7 @@ export default function MangaPanel({
           <img
             src={convertFileSrc(currentPanel.path)}
             alt={currentPanel.name}
-            width="100%"
-            height="100%"
-            className="max-w-full h-auto object-contain"
+            className="w-full h-full object-contain"
           />
         )}
       </div>
