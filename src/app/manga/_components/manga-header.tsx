@@ -8,31 +8,43 @@ import { useEffect } from "react";
 const MangaHeader = ({
   currentManga,
   handleNextPanel,
+  handleNextSinglePanel,
   handlePreviousPanel,
+	handlePreviousSinglePanel,
 }: {
   currentManga: ParentFolderType;
   handleNextPanel: () => void;
+  handleNextSinglePanel: () => void;
   handlePreviousPanel: () => void;
+	handlePreviousSinglePanel: () => void;
 }) => {
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+			// previous panel
+      if (event.shiftKey && event.key === "ArrowRight") {
+        handlePreviousSinglePanel();
+      } else if (event.altKey && event.key === "ArrowRight") {
+        // handleNextPanel();
+      } else if (event.key === "ArrowRight") {
+        handlePreviousPanel();
+      }
 
-	useEffect(() => {
+      // next panel
+       if (event.shiftKey && event.key === "ArrowLeft") {
+        handleNextSinglePanel();
+      } else if (event.altKey && event.key === "ArrowLeft") {
+        // handleNextPanel();
+      } else if (event.key === "ArrowLeft") {
+        handleNextPanel();
+      }
+    }
 
-		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key === "ArrowRight") {
-				handlePreviousPanel();
-			}
-			if (event.key === "ArrowLeft") {
-				handleNextPanel();
-			}
-		}
+    addEventListener("keydown", handleKeyDown);
 
-		addEventListener("keydown", handleKeyDown);
-
-		return () => {
-			removeEventListener("keydown", handleKeyDown);
-		};
-
-	}, [handleNextPanel, handlePreviousPanel]);
+    return () => {
+      removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleNextPanel, handlePreviousPanel]);
 
   return (
     <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center">
@@ -48,13 +60,13 @@ const MangaHeader = ({
           </li>
           <li className="flex flex-row justify-center items-center">
             <Button className="p-0" onClick={handlePreviousPanel}>
-              <ChevronRight size={20}/>
+              <ChevronRight size={20} />
             </Button>
           </li>
         </ul>
       </menu>
     </header>
   );
-}
+};
 
 export default MangaHeader;

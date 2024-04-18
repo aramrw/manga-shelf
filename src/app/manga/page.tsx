@@ -18,7 +18,6 @@ export default function Manga() {
   useEffect(() => {
     fetchGlobalManga().then((manga) => {
       if (manga) {
-        //console.log(manga);
         setCurrentManga(manga);
         readDir(manga.full_path).then((result) => {
           if (result) {
@@ -33,10 +32,8 @@ export default function Manga() {
     if (currentManga) invokeFindLastReadPanel();
   }, [currentManga]);
 
-	useEffect(() => {
-		console.log("max length: ", mangaPanels.length)	
-			console.log(currentPanelIndex);
-		}, [currentPanelIndex]);
+  useEffect(() => {
+  }, [currentPanelIndex]);
 
   const invokeFindLastReadPanel = async () => {
     if (currentManga) {
@@ -60,15 +57,25 @@ export default function Manga() {
       });
 
       setCurrentPanelIndex((prev) => prev - 2);
-    } else if (currentPanelIndex >= mangaPanels.length - 3 && currentPanelIndex < mangaPanels.length - 2) {
-			setCurrentPanelIndex((prev) => prev - 1);
-		}
-
+    } else if (
+      currentPanelIndex >= mangaPanels.length - 3 &&
+      currentPanelIndex < mangaPanels.length - 2
+    ) {
+      setCurrentPanelIndex((prev) => prev - 1);
+    }
   };
 
+  const handlePreviousSinglePanel = () => {
+    if (currentPanelIndex > 0) {
+      invoke("update_manga_panel", {
+        dirPaths: JSON.stringify([mangaPanels[currentPanelIndex].path]),
+        isRead: false,
+      });
+      setCurrentPanelIndex((prev) => prev - 1);
+    }
+  };
   const handleNextPanel = () => {
     if (currentPanelIndex < mangaPanels.length - 3) {
-			console.log("invoking");
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([
           mangaPanels[currentPanelIndex].path,
@@ -77,9 +84,22 @@ export default function Manga() {
         isRead: true,
       });
       setCurrentPanelIndex((prev) => prev + 2);
-    } else if (currentPanelIndex >= mangaPanels.length - 3 && currentPanelIndex < mangaPanels.length - 2) {
-			setCurrentPanelIndex((prev) => prev + 1);
-		}
+    } else if (
+      currentPanelIndex >= mangaPanels.length - 3 &&
+      currentPanelIndex < mangaPanels.length - 2
+    ) {
+      setCurrentPanelIndex((prev) => prev + 1);
+    }
+  };
+
+  const handleNextSinglePanel = () => {
+    if (currentPanelIndex < mangaPanels.length - 3) {
+      invoke("update_manga_panel", {
+        dirPaths: JSON.stringify([mangaPanels[currentPanelIndex + 1].path]),
+        isRead: true,
+      });
+      setCurrentPanelIndex((prev) => prev + 1);
+    }
   };
 
   return (
@@ -88,11 +108,14 @@ export default function Manga() {
         <MangaHeader
           currentManga={currentManga}
           handleNextPanel={handleNextPanel}
+          handleNextSinglePanel={handleNextSinglePanel}
           handlePreviousPanel={handlePreviousPanel}
+          handlePreviousSinglePanel={handlePreviousSinglePanel}
         />
       )}
       <div className="flex flex-row justify-center items-center">
-        {currentPanelIndex < mangaPanels.length - 1 && currentPanelIndex > -1 && (
+        {currentPanelIndex < mangaPanels.length - 1 &&
+          currentPanelIndex > -1 && (
             <>
               <MangaPanel
                 currentPanel={mangaPanels[currentPanelIndex + 1]}
