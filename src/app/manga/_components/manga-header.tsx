@@ -19,10 +19,10 @@ const MangaHeader = ({
 
 		function handleKeyDown(event: KeyboardEvent) {
 			if (event.key === "ArrowRight") {
-				handleNextPanel();
+				handlePreviousPanel();
 			}
 			if (event.key === "ArrowLeft") {
-				handlePreviousPanel();
+				handleNextPanel();
 			}
 		}
 
@@ -39,7 +39,7 @@ const MangaHeader = ({
       <menu className="w-full h-full flex flex-row justify-center items-center">
         <ul className="w-full h-full flex flex-row justify-center items-center gap-2">
           <li className="flex flex-row justify-center items-center">
-            <Button className="p-0" onClick={handlePreviousPanel}>
+            <Button className="p-0" onClick={handleNextPanel}>
               <ChevronLeft size={20} />
             </Button>
           </li>
@@ -47,7 +47,7 @@ const MangaHeader = ({
             <h1 className="font-bold text-sm">{currentManga.title}</h1>
           </li>
           <li className="flex flex-row justify-center items-center">
-            <Button className="p-0" onClick={handleNextPanel}>
+            <Button className="p-0" onClick={handlePreviousPanel}>
               <ChevronRight size={20}/>
             </Button>
           </li>
