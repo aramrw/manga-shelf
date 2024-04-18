@@ -6,14 +6,22 @@ import { useEffect, useState } from "react";
 
 export default function MangaPanel({
   currentPanel,
+  secondPanel,
 }: {
   currentPanel: FileEntry;
+  secondPanel: boolean;
 }) {
   return (
     <div className="w-full h-full flex flex-col justify-center items-center py-2">
-      <h1 className="font-bold fixed left-1 top-[75px] text-xs">
-        {currentPanel.name}
-      </h1>
+      {secondPanel ? (
+        <h1 className="font-bold fixed left-1 top-[75px] text-xs">
+					{currentPanel.name}
+        </h1>
+      ) : (
+        <h1 className="font-bold fixed right-1 top-[75px] text-xs">
+          {currentPanel.name}
+        </h1>
+      )}
       <div className="h-auto w-[53vh] lg:w-[56vh]">
         {currentPanel && currentPanel.name && (
           <img
