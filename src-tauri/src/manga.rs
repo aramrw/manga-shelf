@@ -116,23 +116,25 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
 
 #[tauri::command]
 pub async fn update_manga_panel(dir_path: String, handle: AppHandle, is_read: bool) -> MangaPanel {
+pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: bool) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
-    let uuid = uuid::Uuid::new_v4().to_string();
-    let split_path = split_path_parts(&dir_path);
+    for path in serde_json::from_str::<Vec<String>>(&dir_paths).unwrap() {
+        let uuid = uuid::Uuid::new_v4().to_string();
+        let split_path = split_path_parts(&path);
 
-    // create a MangaFolder struct to push into the manga_folders vector
-    let manga_panel = MangaPanel {
-        id: uuid.clone(),
-        title: split_path.file_name.clone(),
-        full_path: dir_path.clone(),
-        is_read,
-        created_at: "".to_string(),
-        updated_at: "".to_string(),
-    };
+        // create a MangaFolder struct to push into the manga_folders vector
+        // let manga_panel = MangaPanel {
+        //     id: uuid.clone(),
+        //     title: split_path.file_name.clone(),
+        //     full_path: path.clone(),
+        //     is_read,
+        //     created_at: "".to_string(),
+        //     updated_at: "".to_string(),
+        // };
 
-    sqlx::query(
-        "INSERT INTO manga_panel  
+        sqlx::query(
+            "INSERT INTO manga_panel  
         (
             id, 
             title, 
