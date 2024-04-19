@@ -21,7 +21,7 @@ export default function MangaPanel({
   height: number;
 }) {
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center py-2">
+    <div className="w-full h-full flex flex-col justify-center items-center pt-6">
       {secondPanel ? (
         <h1 className="font-bold fixed left-2 bottom-1 text-xs text-zinc-300">
           {currentPanel.name}
