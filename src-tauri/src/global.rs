@@ -6,7 +6,7 @@ use tokio::sync::Mutex;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct GlobalError {
-    message: String,
+    pub message: String,
 }
 
 #[tauri::command]
