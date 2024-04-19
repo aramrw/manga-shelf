@@ -36,7 +36,21 @@ export default function Manga() {
         setCurrentManga(manga);
         readDir(manga.full_path).then((result) => {
           if (result) {
-            setMangaPanels(result);
+            let sorted = result.sort((a, b) => {
+              if (a.name && b.name) {
+                return a.name.localeCompare(b.name, undefined, {
+                  numeric: true,
+                });
+              } else if (a.name) {
+                return -1; // a is sorted to a lower index than b
+              } else if (b.name) {
+                return 1; // b is sorted to a lower index than a
+              } else {
+                return 0; // both a and b are undefined, so they're considered equal
+              }
+            });
+
+            setMangaPanels(sorted);
             // always update the first panel as read because
             // the handles only invoke starting from the second panel
             invoke("update_manga_panel", {
@@ -59,7 +73,7 @@ export default function Manga() {
       //console.log("getting:", mangaPanels[currentPanelIndex].path);
       let remove = setTimeout(() => {
         invokeGetCurrentPanel();
-      }, 20);
+      }, 30);
 
       return () => {
         clearTimeout(remove);

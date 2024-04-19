@@ -45,18 +45,21 @@ export default function ParentFolder({
       readDir(dir, { recursive: true })
         .then((result: FileEntry[]) => {
           for (const entry of result) {
-            if (entry.path.includes(".jpg")) {
+            if (entry.path.includes(".jpg") 
+							|| entry.path.includes(".jpeg")
+							|| entry.path.includes(".png")
+						) {
               return;
             }
             folderDirPaths.push(entry.path);
             // if the entry is a directory that holds images
-            //console.log(entry);
             if (
               entry.children &&
               (entry.children[0].path.includes(".jpeg") ||
                 entry.children[0].path.includes(".png") ||
                 entry.children[0].path.includes(".jpg"))
             ) {
+							//console.log("entry", entry);
               setMangaFolders((prev) => [...prev, entry]);
             }
           }
