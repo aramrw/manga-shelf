@@ -19,6 +19,9 @@ export default function NavBar() {
   }, [pathname]);
 
   const handleGoBack = () => {
+		if (pathname === "/dashboard") {
+			router.forward();
+		}
     router.back();
   };
 
@@ -33,12 +36,12 @@ export default function NavBar() {
         </li>
         <ul className="flex flex-row gap-1">
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
-            <Link href="/">
+            <Link href="/stats">
               <BarChart3 className="w-5 h-auto" strokeWidth={2.4} />
             </Link>
           </li>
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
-            <Link href="/">
+            <Link href="">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
