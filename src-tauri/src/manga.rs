@@ -1,9 +1,7 @@
-use crate::global::GlobalError;
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
-use crate::global::GlobalError;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct MangaFolder {
