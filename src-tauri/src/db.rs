@@ -72,6 +72,7 @@ pub async fn migrate_manga_panel_table(sqlite_pool: &SqlitePool) -> Result<(), s
             is_read BOOLEAN DEFAULT 0,
             width INTEGER,
             height INTEGER,
+            zoom_level INTEGER,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
