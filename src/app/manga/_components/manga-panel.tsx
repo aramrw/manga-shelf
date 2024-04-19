@@ -3,17 +3,24 @@
 import { cn } from "@/lib/utils";
 import { FileEntry } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import Image from "next/image";
+import { useEffect } from "react";
+import ImageSkeleton from "./image-skeleton";
 
 export default function MangaPanel({
   currentPanel,
   secondPanel,
   zoomLevel,
+	width,
+	height,
 }: {
   currentPanel: FileEntry;
   secondPanel: boolean;
   zoomLevel: number;
+	width: number;
+	height: number;
 }) {
-
+	
   return (
     <div className="w-full h-full flex flex-col justify-center items-center py-2">
       {secondPanel ? (
@@ -27,16 +34,20 @@ export default function MangaPanel({
       )}
       <div
         id="IMAGE-DIV"
-        className={cn("w-full")}
         style={{
-          height: `${510 + zoomLevel}px`,
+          height: `${zoomLevel}px`,
+					width: "auto",
         }}
       >
         {currentPanel && currentPanel.name && (
-          <img
+          <Image
             src={convertFileSrc(currentPanel.path)}
             alt={currentPanel.name}
-            className="w-full h-full object-contain"
+						width={width}
+						height={height}
+						quality={100}
+						priority={true}
+						className="w-full h-full"
           />
         )}
       </div>

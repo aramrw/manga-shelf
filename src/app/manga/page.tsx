@@ -15,7 +15,7 @@ export type MangaPanelType = {
   is_read: boolean;
   width: number;
   height: number;
-	zoom_level: number;
+  zoom_level: number;
   created_at: string;
   updated_at: string;
 };
@@ -28,7 +28,7 @@ export default function Manga() {
   const [currentPanelIndex, setCurrentPanelIndex] = useState<number>(0);
   const [currentMangaPanel, setCurrentMangaPanel] =
     useState<MangaPanelType | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(490);
 
   useEffect(() => {
     fetchGlobalManga().then((manga) => {
@@ -89,9 +89,11 @@ export default function Manga() {
       invoke("get_manga_panel", {
         path: mangaPanels[currentPanelIndex].path,
       }).then((panel: unknown) => {
-				let knownPanel = panel as MangaPanelType;
+        let knownPanel = panel as MangaPanelType;
         setCurrentMangaPanel(knownPanel);
-				setZoomLevel(knownPanel.zoom_level);
+        if (knownPanel.zoom_level > 0) {
+          setZoomLevel(knownPanel.zoom_level);
+        }
       });
     }
   };
@@ -176,8 +178,8 @@ export default function Manga() {
               handlePreviousPanel={handlePreviousPanel}
               handlePreviousSinglePanel={handlePreviousSinglePanel}
               largePanel={currentMangaPanel.width > 1500}
-							currentPanelPath={mangaPanels[currentPanelIndex].path}
-							zoomLevel={zoomLevel}
+              currentPanelPath={mangaPanels[currentPanelIndex].path}
+              zoomLevel={zoomLevel}
               setZoomLevel={setZoomLevel}
             />
             <div className="flex flex-row justify-center items-center">
@@ -188,6 +190,8 @@ export default function Manga() {
                     currentPanel={mangaPanels[currentPanelIndex + 1]}
                     secondPanel={true}
                     zoomLevel={zoomLevel}
+                    width={currentMangaPanel.width}
+                    height={currentMangaPanel.height}
                   />
                 )}
 
@@ -196,6 +200,8 @@ export default function Manga() {
                   currentPanel={mangaPanels[currentPanelIndex]}
                   secondPanel={false}
                   zoomLevel={zoomLevel}
+                  width={currentMangaPanel.width}
+                  height={currentMangaPanel.height}
                 />
               </>
             </div>
