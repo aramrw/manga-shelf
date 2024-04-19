@@ -27,7 +27,7 @@ export default function Manga() {
   const [currentPanelIndex, setCurrentPanelIndex] = useState<number>(0);
   const [currentMangaPanel, setCurrentMangaPanel] =
     useState<MangaPanelType | null>(null);
-	const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     fetchGlobalManga().then((manga) => {
@@ -54,7 +54,14 @@ export default function Manga() {
       mangaPanels.length > 0 &&
       mangaPanels[currentPanelIndex]
     ) {
-      invokeGetCurrentPanel();
+      console.log("getting:", mangaPanels[currentPanelIndex].path);
+      let remove = setTimeout(() => {
+        invokeGetCurrentPanel();
+      }, 8);
+
+      return () => {
+        clearTimeout(remove);
+      }; 
     }
   }, [mangaPanels, currentPanelIndex]);
 
@@ -62,7 +69,7 @@ export default function Manga() {
     if (currentManga) invokeFindLastReadPanel();
   }, [currentManga]);
 
-  useEffect(() => {}, [currentPanelIndex]);
+  useEffect(() => { }, [currentPanelIndex]);
 
   const invokeFindLastReadPanel = async () => {
     if (currentManga) {
@@ -159,8 +166,8 @@ export default function Manga() {
               handleNextSinglePanel={handleNextSinglePanel}
               handlePreviousPanel={handlePreviousPanel}
               handlePreviousSinglePanel={handlePreviousSinglePanel}
-							largePanel={currentMangaPanel.width > 1500}
-							setZoomLevel={setZoomLevel}
+              largePanel={currentMangaPanel.width > 1500}
+              setZoomLevel={setZoomLevel}
             />
             <div className="flex flex-row justify-center items-center">
               <>
@@ -169,7 +176,7 @@ export default function Manga() {
                     key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
                     currentPanel={mangaPanels[currentPanelIndex + 1]}
                     secondPanel={true}
-										zoomLevel={zoomLevel}
+                    zoomLevel={zoomLevel}
                   />
                 )}
 
@@ -177,7 +184,7 @@ export default function Manga() {
                   key={`${mangaPanels[currentPanelIndex].path}-manga-panel-current`}
                   currentPanel={mangaPanels[currentPanelIndex]}
                   secondPanel={false}
-									zoomLevel={zoomLevel}
+                  zoomLevel={zoomLevel}
                 />
               </>
             </div>
