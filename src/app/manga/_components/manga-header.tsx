@@ -13,9 +13,9 @@ import { useEffect } from "react";
 const MangaHeader = ({
   currentManga,
   largePanel,
-	currentPanelPath,
-	zoomLevel,
-	setZoomLevel,
+  currentPanelPath,
+  zoomLevel,
+  setZoomLevel,
   handleNextPanel,
   handleNextSinglePanel,
   handlePreviousPanel,
@@ -23,45 +23,53 @@ const MangaHeader = ({
 }: {
   currentManga: ParentFolderType;
   largePanel: boolean;
-	currentPanelPath: string;
-	zoomLevel: number;
-	setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
+  currentPanelPath: string;
+  zoomLevel: number;
+  setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
   handleNextPanel: () => void;
   handleNextSinglePanel: () => void;
   handlePreviousPanel: () => void;
   handlePreviousSinglePanel: () => void;
 }) => {
 
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      // previous panel
-      if (event.shiftKey && event.key === "ArrowRight") {
+  function handleKeyDown(event: KeyboardEvent) {
+    // previous panel
+    if (event.shiftKey && event.key === "ArrowRight") {
+      handlePreviousSinglePanel();
+    } else if (event.altKey && event.key === "ArrowRight") {
+      // handleNextPanel();
+    } else if (event.key === "ArrowRight") {
+      if (largePanel) {
         handlePreviousSinglePanel();
-      } else if (event.altKey && event.key === "ArrowRight") {
-        // handleNextPanel();
-      } else if (event.key === "ArrowRight") {
-        if (largePanel) {
-          handlePreviousSinglePanel();
-        } else {
-          handlePreviousPanel();
-        }
-      }
-
-      // next panel
-      if (event.shiftKey && event.key === "ArrowLeft") {
-        handleNextSinglePanel();
-      } else if (event.altKey && event.key === "ArrowLeft") {
-        // handleNextPanel();
-      } else if (event.key === "ArrowLeft") {
-        if (largePanel) {
-          handleNextSinglePanel();
-        } else {
-          handleNextPanel();
-        }
+      } else {
+        handlePreviousPanel();
       }
     }
 
+    // next panel
+    if (event.shiftKey && event.key === "ArrowLeft") {
+      handleNextSinglePanel();
+    } else if (event.altKey && event.key === "ArrowLeft") {
+      // handleNextPanel();
+    } else if (event.key === "ArrowLeft") {
+      if (largePanel) {
+        handleNextSinglePanel();
+      } else {
+        handleNextPanel();
+      }
+    }
+
+
+		if (event.ctrlKey && event.key === "=") {
+			handleMagnify();
+		} else if (event.ctrlKey && event.key === "-") {
+			handleMinify();
+		}
+
+  }
+
+
+  useEffect(() => {
     addEventListener("keydown", handleKeyDown);
 
     return () => {
@@ -69,32 +77,35 @@ const MangaHeader = ({
     };
   }, [handleNextPanel, handlePreviousPanel]);
 
-	const handleMagnify = () => {
-		setZoomLevel((prev) => prev + 10);
-		invoke("update_manga_panel", {	dirPaths: JSON.stringify([currentPanelPath]), isRead: true, zoomLevel: zoomLevel + 10 });
-	};
+  const handleMagnify = () => {
+    setZoomLevel((prev) => prev + 10);
+    invoke("update_manga_panel", {
+      dirPaths: JSON.stringify([currentPanelPath]),
+      isRead: true,
+      zoomLevel: zoomLevel + 10,
+    });
+  };
 
-	const handleMinify = () => {
-		setZoomLevel((prev) => prev - 10);
-		invoke("update_manga_panel", {	dirPaths: JSON.stringify([currentPanelPath]), isRead: true, zoomLevel: zoomLevel - 10});
-	};
-
+  const handleMinify = () => {
+    setZoomLevel((prev) => prev - 10);
+    invoke("update_manga_panel", {
+      dirPaths: JSON.stringify([currentPanelPath]),
+      isRead: true,
+      zoomLevel: zoomLevel - 10,
+    });
+  };
 
   return (
     <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center">
       <menu className="w-full h-full flex flex-row justify-center items-center">
         <ul className="w-fit h-fit flex flex-row justify-center items-center gap-1">
           <li className="flex flex-row justify-center items-center">
-            <Button className="py-0.5 px-1"
-							onClick={handleMagnify}
-							>
+            <Button className="py-0.5 px-1" onClick={handleMagnify}>
               <MagnifyingGlassPlusIcon className="w-4 h-auto" />
             </Button>
           </li>
           <li className="flex flex-row justify-center items-center">
-            <Button className="py-0.5 px-1"
-							onClick={handleMinify}
-							>
+            <Button className="py-0.5 px-1" onClick={handleMinify}>
               <MagnifyingGlassMinusIcon className="w-4 h-auto" />
             </Button>
           </li>

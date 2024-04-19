@@ -59,7 +59,7 @@ export default function Manga() {
       console.log("getting:", mangaPanels[currentPanelIndex].path);
       let remove = setTimeout(() => {
         invokeGetCurrentPanel();
-      }, 8);
+      }, 15);
 
       return () => {
         clearTimeout(remove);
