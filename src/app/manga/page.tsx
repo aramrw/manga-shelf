@@ -15,6 +15,7 @@ export type MangaPanelType = {
   is_read: boolean;
   width: number;
   height: number;
+	zoom_level: number;
   created_at: string;
   updated_at: string;
 };
@@ -41,6 +42,7 @@ export default function Manga() {
             invoke("update_manga_panel", {
               dirPaths: JSON.stringify([result[0].path]),
               isRead: true,
+              zoomLevel: 0,
             });
           }
         });
@@ -61,7 +63,7 @@ export default function Manga() {
 
       return () => {
         clearTimeout(remove);
-      }; 
+      };
     }
   }, [mangaPanels, currentPanelIndex]);
 
@@ -86,8 +88,10 @@ export default function Manga() {
     if (currentManga) {
       invoke("get_manga_panel", {
         path: mangaPanels[currentPanelIndex].path,
-      }).then((currentPanelIndex: unknown) => {
-        setCurrentMangaPanel(currentPanelIndex as MangaPanelType);
+      }).then((panel: unknown) => {
+				let knownPanel = panel as MangaPanelType;
+        setCurrentMangaPanel(knownPanel);
+				setZoomLevel(knownPanel.zoom_level);
       });
     }
   };
@@ -102,6 +106,7 @@ export default function Manga() {
           mangaPanels[currentPanelIndex].path,
         ]),
         isRead: false,
+        zoomLevel: zoomLevel,
       });
 
       setCurrentPanelIndex(0);
@@ -112,6 +117,7 @@ export default function Manga() {
           mangaPanels[currentPanelIndex].path,
         ]),
         isRead: false,
+        zoomLevel: zoomLevel,
       });
 
       setCurrentPanelIndex((prev) => prev - 2);
@@ -123,6 +129,7 @@ export default function Manga() {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([mangaPanels[currentPanelIndex].path]),
         isRead: false,
+        zoomLevel: zoomLevel,
       });
       setCurrentPanelIndex((prev) => prev - 1);
     }
@@ -137,6 +144,7 @@ export default function Manga() {
           mangaPanels[currentPanelIndex + 2].path,
         ]),
         isRead: true,
+        zoomLevel: zoomLevel,
       });
       setCurrentPanelIndex((prev) => prev + 2);
     }
@@ -147,6 +155,7 @@ export default function Manga() {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([mangaPanels[currentPanelIndex + 1].path]),
         isRead: true,
+        zoomLevel: zoomLevel,
       });
       setCurrentPanelIndex((prev) => prev + 1);
     }
@@ -167,6 +176,8 @@ export default function Manga() {
               handlePreviousPanel={handlePreviousPanel}
               handlePreviousSinglePanel={handlePreviousSinglePanel}
               largePanel={currentMangaPanel.width > 1500}
+							currentPanelPath={mangaPanels[currentPanelIndex].path}
+							zoomLevel={zoomLevel}
               setZoomLevel={setZoomLevel}
             />
             <div className="flex flex-row justify-center items-center">

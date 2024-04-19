@@ -34,8 +34,6 @@ pub struct PathParts {
     pub extension: Option<String>,
 }
 
-
-
 #[tauri::command]
 pub async fn update_manga_folders(
     dir_paths: String,
@@ -132,7 +130,12 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
 }
 
 #[tauri::command]
-pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: bool) {
+pub async fn update_manga_panel(
+    dir_paths: String,
+    handle: AppHandle,
+    is_read: bool,
+    zoom_level: u16,
+) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
     //let mut manga_panels: Vec<MangaPanel> = Vec::new();
 
@@ -164,12 +167,13 @@ pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: b
             is_read,
             width,
             height,
+            zoom_level,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?,
             datetime('now'), datetime('now')
         )
         ON CONFLICT (full_path) DO UPDATE SET
@@ -182,9 +186,20 @@ pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: b
         .bind(is_read)
         .bind(width)
         .bind(height)
+        .bind(zoom_level)
         .execute(&pool)
         .await
         .unwrap();
+    }
+
+    // update every panel to match the same zoom level
+
+    if zoom_level > 0 {
+        sqlx::query("UPDATE manga_panel SET zoom_level = ?")
+            .bind(zoom_level)
+            .execute(&pool)
+            .await
+            .unwrap();
     }
 
     //manga_panels
@@ -223,7 +238,6 @@ pub async fn update_manga_panel(dir_paths: String, handle: AppHandle, is_read: b
 #[tauri::command]
 pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel, String> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-    
 
     if path.is_empty() {
         return Err("Path is empty".to_string());
@@ -308,5 +322,5 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
 
     //println!("last panel: {:?} at index {}", panels[last].title, last);
 
-    last 
+    last
 }

@@ -6,12 +6,15 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
 } from "@heroicons/react/16/solid";
+import { invoke } from "@tauri-apps/api/tauri";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect } from "react";
 
 const MangaHeader = ({
   currentManga,
   largePanel,
+	currentPanelPath,
+	zoomLevel,
 	setZoomLevel,
   handleNextPanel,
   handleNextSinglePanel,
@@ -20,6 +23,8 @@ const MangaHeader = ({
 }: {
   currentManga: ParentFolderType;
   largePanel: boolean;
+	currentPanelPath: string;
+	zoomLevel: number;
 	setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
   handleNextPanel: () => void;
   handleNextSinglePanel: () => void;
@@ -66,10 +71,12 @@ const MangaHeader = ({
 
 	const handleMagnify = () => {
 		setZoomLevel((prev) => prev + 10);
+		invoke("update_manga_panel", {	dirPaths: JSON.stringify([currentPanelPath]), isRead: true, zoomLevel: zoomLevel + 10 });
 	};
 
 	const handleMinify = () => {
 		setZoomLevel((prev) => prev - 10);
+		invoke("update_manga_panel", {	dirPaths: JSON.stringify([currentPanelPath]), isRead: true, zoomLevel: zoomLevel - 10});
 	};
 
 
