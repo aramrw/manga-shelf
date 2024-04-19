@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
+use crate::global::GlobalError;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct MangaFolder {
@@ -32,6 +33,8 @@ pub struct PathParts {
     pub file_name: String,
     pub extension: Option<String>,
 }
+
+
 
 #[tauri::command]
 pub async fn update_manga_folders(
@@ -214,6 +217,24 @@ pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
 
     // return the manga_panel vector back to the frontend
     manga_panels
+}
+
+#[tauri::command]
+pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel, String> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    
+
+    if path.is_empty() {
+        return Err("Path is empty".to_string());
+    }
+
+    let panel: MangaPanel = sqlx::query_as("SELECT * FROM manga_panel WHERE full_path = ?")
+        .bind(path)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    Ok(panel)
 }
 
 #[tauri::command]

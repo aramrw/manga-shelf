@@ -27,6 +27,7 @@ fn main() {
             manga::update_manga_panel,
             manga::get_manga_panels,
             manga::find_last_read_panel,
+            manga::get_manga_panel,
             manga::delete_manga_folder,
             global::set_global_manga,
             global::get_global_manga,
