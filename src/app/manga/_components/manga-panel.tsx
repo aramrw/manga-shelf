@@ -4,8 +4,6 @@ import { cn } from "@/lib/utils";
 import { FileEntry } from "@tauri-apps/api/fs";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import Image from "next/image";
-import { useEffect } from "react";
-import ImageSkeleton from "./image-skeleton";
 
 export default function MangaPanel({
   currentPanel,

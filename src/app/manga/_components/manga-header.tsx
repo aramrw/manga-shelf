@@ -96,23 +96,23 @@ const MangaHeader = ({
   };
 
   return (
-    <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center">
+    <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center border-b-2 border-accent shadow-sm">
       <menu className="w-full h-full flex flex-row justify-center items-center">
         <ul className="w-fit h-fit flex flex-row justify-center items-center gap-1">
           <li className="flex flex-row justify-center items-center">
-            <Button className="py-0.5 px-1" onClick={handleMagnify}>
+            <Button className="py-0.5 px-1 shadow-lg" onClick={handleMagnify}>
               <MagnifyingGlassPlusIcon className="w-4 h-auto" />
             </Button>
           </li>
           <li className="flex flex-row justify-center items-center">
-            <Button className="py-0.5 px-1" onClick={handleMinify}>
+            <Button className="py-0.5 px-1 shadow-lg" onClick={handleMinify}>
               <MagnifyingGlassMinusIcon className="w-4 h-auto" />
             </Button>
           </li>
         </ul>
         <ul className="w-full h-full flex flex-row justify-center items-center gap-2">
           <li className="flex flex-row justify-center items-center">
-            <Button className="p-0" onClick={handleNextPanel}>
+            <Button className="p-0 shadow-lg" onClick={handleNextPanel}>
               <ChevronLeft size={20} />
             </Button>
           </li>
@@ -120,7 +120,7 @@ const MangaHeader = ({
             <h1 className="font-bold text-sm">{currentManga.title}</h1>
           </li>
           <li className="flex flex-row justify-center items-center">
-            <Button className="p-0" onClick={handlePreviousPanel}>
+            <Button className="p-0 shadow-lg" onClick={handlePreviousPanel}>
               <ChevronRight size={20} />
             </Button>
           </li>

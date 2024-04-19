@@ -5,8 +5,8 @@ import fetchGlobalManga from "./_components/lib/fetch-global-manga";
 import MangaHeader from "./_components/manga-header";
 import { useEffect, useState } from "react";
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
-import MangaPanel from "./_components/manga-panel";
 import { invoke } from "@tauri-apps/api/tauri";
+import MangaPanel from "./_components/manga-panel";
 
 export type MangaPanelType = {
   id: string;
@@ -56,10 +56,10 @@ export default function Manga() {
       mangaPanels.length > 0 &&
       mangaPanels[currentPanelIndex]
     ) {
-      console.log("getting:", mangaPanels[currentPanelIndex].path);
+      //console.log("getting:", mangaPanels[currentPanelIndex].path);
       let remove = setTimeout(() => {
         invokeGetCurrentPanel();
-      }, 15);
+      }, 20);
 
       return () => {
         clearTimeout(remove);
