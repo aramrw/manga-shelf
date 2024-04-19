@@ -1,7 +1,9 @@
+import TimeTabs from "./_components/time-tabs/time-tabs";
+
 export default function StatsPage() {
   return (
-    <div>
-      <h1>Stats</h1>
-    </div>
+    <main className="w-full h-full flex flex-col justify-center items-center p-5">
+      <TimeTabs />
+    </main>
   );
 }
