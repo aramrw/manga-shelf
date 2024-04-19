@@ -64,6 +64,14 @@ const MangaHeader = ({
     };
   }, [handleNextPanel, handlePreviousPanel]);
 
+	const handleMagnify = () => {
+		setZoomLevel((prev) => prev + 10);
+	};
+
+	const handleMinify = () => {
+		setZoomLevel((prev) => prev - 10);
+	};
+
 
   return (
     <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center">
@@ -71,14 +79,14 @@ const MangaHeader = ({
         <ul className="w-fit h-fit flex flex-row justify-center items-center gap-1">
           <li className="flex flex-row justify-center items-center">
             <Button className="py-0.5 px-1"
-							onClick={() => setZoomLevel((prev) => prev + 10)}
+							onClick={handleMagnify}
 							>
               <MagnifyingGlassPlusIcon className="w-4 h-auto" />
             </Button>
           </li>
           <li className="flex flex-row justify-center items-center">
             <Button className="py-0.5 px-1"
-							onClick={() => setZoomLevel((prev) => prev - 10)}
+							onClick={handleMinify}
 							>
               <MagnifyingGlassMinusIcon className="w-4 h-auto" />
             </Button>

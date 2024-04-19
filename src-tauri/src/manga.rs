@@ -1,3 +1,4 @@
+use crate::global::GlobalError;
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 use tauri::{AppHandle, Manager};
