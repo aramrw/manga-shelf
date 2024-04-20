@@ -31,6 +31,7 @@ fn main() {
             manga::get_manga_panel,
             manga::find_last_read_panel,
             manga::delete_folder,
+            manga::update_folder_time_spent_reading,
             global::set_global_manga,
             global::get_global_manga,
             stats::fetch_daily_manga_folders,
