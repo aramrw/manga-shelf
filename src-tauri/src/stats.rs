@@ -15,7 +15,7 @@ pub struct Stats {
 }
 
 #[tauri::command]
-pub async fn fetch_updated_manga(handle: AppHandle) -> Vec<MangaFolder> {
+pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     // fetch all manga folders created + updated today
