@@ -23,12 +23,14 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            manga::update_parent_folders,
             manga::update_manga_folders,
-            manga::get_manga_folders,
             manga::update_manga_panel,
-            manga::find_last_read_panel,
+            manga::get_parent_folders,
+            manga::get_manga_folders,
             manga::get_manga_panel,
-            manga::delete_manga_folder,
+            manga::find_last_read_panel,
+            manga::delete_folder,
             global::set_global_manga,
             global::get_global_manga,
             stats::fetch_daily_manga_folders,
