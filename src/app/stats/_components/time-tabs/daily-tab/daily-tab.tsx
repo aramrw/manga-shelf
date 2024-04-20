@@ -17,7 +17,7 @@ export default function DailyTab() {
   const [dailyManga, setDailyManga] = useState<ParentFolderType[]>([]);
 
   useEffect(() => {
-    invoke("fetch_daily").then((daily) => {
+    invoke("fetch_updated_manga").then((daily) => {
       setDailyManga(daily as ParentFolderType[]);
     });
   }, []);
