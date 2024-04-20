@@ -1,27 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeftStartOnRectangleIcon,
-} from "@heroicons/react/16/solid";
+import { ArrowLeftStartOnRectangleIcon } from "@heroicons/react/16/solid";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { BarChart3, } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BarChart3 } from "lucide-react";
+import { invoke } from "@tauri-apps/api/tauri";
+import { MangaFolderType } from "@/app/dashboard/page";
 
 export default function NavBar() {
   const router = useRouter();
   const pathname = usePathname();
+  const [startTime, setStartTime] = useState<number>(0);
 
   useEffect(() => {
     if (pathname == "/") {
       router.push("/dashboard");
     }
+
+    if (pathname == "/manga") {
+			setStartTime(new Date().getTime());
+    } else {
+      const elapsedTime = new Date().getTime() - startTime;
+
+      invoke("get_global_manga").then((result: unknown) => {
+        invoke("update_folder_time_spent_reading", {
+					folderPath: (result as MangaFolderType).full_path,
+					timeSpentReading: elapsedTime,
+				});
+      });
+
+      setStartTime(0);
+    }
   }, [pathname]);
 
   const handleGoBack = () => {
-		if (pathname === "/dashboard") {
-			router.forward();
-		}
+    if (pathname === "/dashboard") {
+      router.forward();
+    }
     router.back();
   };
 
