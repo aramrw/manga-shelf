@@ -1,6 +1,6 @@
 "use client";
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
-import { ParentFolderType } from "../../page";
+import { MangaFolderType, ParentFolderType } from "../../page";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -11,83 +11,86 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
+const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
+
 export default function ParentFolder({
   parentFolder,
 }: {
   parentFolder: ParentFolderType;
 }) {
-  const [childFolders, setChildFolders] = useState<ParentFolderType[]>([]);
-  const [mangaFolders, setMangaFolders] = useState<FileEntry[]>([]);
+  // these can hold both manga folders and child folders
+  const [parentFolders, setParentFolders] = useState<ParentFolderType[]>([]);
+  // these only hold manga panels
+  const [mangaFolders, setMangaFolders] = useState<MangaFolderType[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(
     parentFolder.is_expanded,
   );
   const router = useRouter();
 
   useEffect(() => {
-    handleReadDirectories(parentFolder.full_path);
+    readDirSort(parentFolder.full_path);
   }, []);
 
-  useEffect(() => {
-    for (const cf of childFolders) {
-      for (const mf of mangaFolders) {
-        if (cf.full_path === mf.path) {
-          setChildFolders((prev) =>
-            prev.filter((m) => m.full_path !== mf.path),
-          );
+  function readDirSort(dir: string) {
+    const parentFolderPaths: string[] = [];
+    const mangaFolderPaths: string[] = [];
+
+    readDir(dir, { recursive: true })
+      .then((dirEntries: FileEntry[]) => {
+        for (const entry of dirEntries) {
+          if (
+            entry.children &&
+            entry.children[0] &&
+            entry.children[0].name &&
+            fileTypes.some(
+              (fileType) =>
+                entry.children &&
+                entry.children[0].name &&
+                entry.children[0].name.includes(fileType),
+            )
+          ) {
+            mangaFolderPaths.push(entry.path);
+          } else {
+            parentFolderPaths.push(entry.path);
+          }
         }
+      })
+      .then(() => {
+        if (parentFolderPaths.length > 0 || mangaFolderPaths.length > 0) {
+          invokeAddFolders(parentFolderPaths, mangaFolderPaths);
+        }
+      });
+  }
+
+  const invokeAddFolders = (parentDirs: string[], mangaDirs: string[]) => {
+    invoke("update_parent_folders", {
+      dirPaths: JSON.stringify(parentDirs),
+      asChild: true,
+      isExpanded: false,
+    }).then((result: unknown) => {
+      if (result) {
+        const currentParentFolders: ParentFolderType[] =
+          result as ParentFolderType[];
+        setParentFolders(currentParentFolders);
       }
-    }
-  }, [childFolders]);
+    });
 
-  const handleReadDirectories = (dir: string) => {
-    const folderDirPaths: string[] = [];
-    try {
-      readDir(dir, { recursive: true })
-        .then((result: FileEntry[]) => {
-          for (const entry of result) {
-            if (entry.path.includes(".jpg") 
-							|| entry.path.includes(".jpeg")
-							|| entry.path.includes(".png")
-						) {
-              return;
-            }
-            folderDirPaths.push(entry.path);
-            // if the entry is a directory that holds images
-            if (
-              entry.children &&
-              (entry.children[0].path.includes(".jpeg") ||
-                entry.children[0].path.includes(".png") ||
-                entry.children[0].path.includes(".jpg"))
-            ) {
-							//console.log("entry", entry);
-              setMangaFolders((prev) => [...prev, entry]);
-            }
-          }
-        })
-        .then(() => {
-          if (folderDirPaths.length > 0) {
-            handleInvokeAddMangaFolders(folderDirPaths);
-          }
-        });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleMangaClick = (mangaFolderPath: string) => {
-    //console.log("setting global manga");
-    invoke("set_global_manga", { fullPath: mangaFolderPath }).then(() => {
-      router.push("/manga");
+    invoke("update_manga_folders", {
+      dirPaths: JSON.stringify(mangaDirs),
+      asChild: true,
+      isExpanded: false,
+    }).then((result: unknown) => {
+      if (result) {
+        const currentMangaFolders: MangaFolderType[] =
+          result as MangaFolderType[];
+        setMangaFolders(currentMangaFolders);
+      }
     });
   };
 
-  const handleInvokeAddMangaFolders = (dirs: string[]) => {
-    invoke("update_manga_folders", {
-      dirPaths: JSON.stringify(dirs),
-      asChild: true,
-      isExpanded: isExpanded,
-    }).then((res) => {
-      setChildFolders(res as ParentFolderType[]);
+  const handleMangaClick = (mangaFolderPath: string) => {
+    invoke("set_global_manga", { fullPath: mangaFolderPath }).then(() => {
+      router.push("/manga");
     });
   };
 
@@ -110,26 +113,24 @@ export default function ParentFolder({
 			shadow-sm
 				`,
         !isExpanded &&
-        "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
-        parentFolder.as_child && "p-0 text-xs",
-        mangaFolders.length === 0 && childFolders.length === 0 && "bg-accent-foreground"
+          !parentFolder.as_child &&
+          "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
+        parentFolder.as_child && "p-0 rounded-none text-xs",
       )}
     >
       <div
-        className={
-          "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary"
-        }
+        className={cn(
+          "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary",
+          parentFolder.as_child && "bg-accent-foreground",
+        )}
         onClick={() => {
-          if (mangaFolders.length === 0 && childFolders.length === 0) {
-            handleMangaClick(parentFolder.full_path);
-          } else {
-            setIsExpanded(!isExpanded);
-            invoke("update_manga_folders", {
-              dirPaths: JSON.stringify([parentFolder.full_path]),
-              asChild: false,
-              isExpanded: !isExpanded,
-            });
-          }
+          invoke("update_parent_folders", {
+            dirPaths: JSON.stringify([parentFolder.full_path]),
+            asChild: parentFolder.as_child,
+            isExpanded: !isExpanded,
+          });
+
+          setIsExpanded(!isExpanded);
         }}
       >
         <h1 className="font-bold w-full overflow-hidden text-nowrap">
@@ -139,29 +140,28 @@ export default function ParentFolder({
       {isExpanded && (
         <>
           <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
-            {childFolders.map((childFolder, index) => (
+            {parentFolders.map((folder, index) => (
               <ParentFolder
-                key={`${childFolder.id}-${index}`}
-                parentFolder={childFolder}
+                key={`${folder.id}-${index}`}
+                parentFolder={folder}
               />
             ))}
           </div>
           <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
             {mangaFolders.map((mangaFolder, index) => (
-              <HoverCard key={`${mangaFolder.path}-${index}`}>
+              <HoverCard key={`${mangaFolder.full_path}-${index}`}>
                 <HoverCardTrigger className="w-full h-full">
                   <h1
                     className={cn(
-                      "bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
-                      index === 0 && "border-t-0",
+                      "z-50 bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
                     )}
-                    onClick={() => handleMangaClick(mangaFolder.path)}
+                    onClick={() => handleMangaClick(mangaFolder.full_path)}
                   >
-                    {mangaFolder.name}
+                    {mangaFolder.title}
                   </h1>
                 </HoverCardTrigger>
                 <HoverCardContent className="z-50 w-fit h-fit p-1 font-semibold text-xs">
-                  {mangaFolder.name}
+                  {mangaFolder.title}
                 </HoverCardContent>
               </HoverCard>
             ))}
