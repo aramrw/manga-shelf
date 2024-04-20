@@ -42,35 +42,35 @@ export default function MainStats() {
       <h1 className="font-bold rounded-md px-1">Main Stats</h1>
       <Separator className="h-[1.1px] w-1/5 mb-1.5 mr-0.5" />
       <ul className="flex flex-row justify-center items-start gap-3 pb-0.5">
-        <li className="flex flex-col justify-center items-start gap-0.5 text-xs">
+        <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Total Manga</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
             {mainStats?.total_manga}
           </span>
         </li>
-        <Separator className="w-[1.1px] h-9" />
-        <li className="flex flex-col justify-center items-start gap-0.5 text-xs">
+        <Separator className="w-[1.1px] h-11" />
+        <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Total Panels</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
             {mainStats?.total_panels}
           </span>
         </li>
-        <Separator className="w-[1px] h-9" />
-        <li className="flex flex-col justify-center items-start gap-0.5 text-xs">
+        <Separator className="w-[1px] h-11" />
+        <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Panels Read</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
             {mainStats?.total_panels_read}
           </span>
         </li>
-        <Separator className="w-[1.1px] h-9" />
-        <li className="flex flex-col justify-center items-start gap-0.5 text-xs">
+        <Separator className="w-[1.1px] h-11" />
+        <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Panels Remaining</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
             {mainStats?.total_panels_remaining}
           </span>
         </li>
-        <Separator className="w-[1.1px] h-9" />
-        <li className="flex flex-col justify-center items-start gap-0.5 text-xs">
+        <Separator className="w-[1.1px] h-11" />
+        <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Time Spent Reading</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
 						{calculateTimeSpentReading(mainStats?.total_time_spent_reading)}
