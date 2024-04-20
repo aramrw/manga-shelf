@@ -3,7 +3,7 @@ use sqlx::{Row, SqlitePool};
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
 pub struct MangaFolder {
     pub id: String,
     pub title: String,
