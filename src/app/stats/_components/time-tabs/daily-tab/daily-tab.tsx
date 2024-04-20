@@ -14,11 +14,11 @@ import { useEffect, useState } from "react";
 import MangaCard from "../../manga-card";
 
 export default function DailyTab() {
-  const [dailyManga, setDailyManga] = useState<ParentFolderType[]>([]);
+  const [dailyMangaFolders, setDailyMangaFolders] = useState<ParentFolderType[]>([]);
 
   useEffect(() => {
-    invoke("fetch_updated_manga").then((daily) => {
-      setDailyManga(daily as ParentFolderType[]);
+    invoke("fetch_daily_manga_folders").then((daily) => {
+      setDailyMangaFolders(daily as ParentFolderType[]);
     });
   }, []);
 
@@ -33,7 +33,7 @@ export default function DailyTab() {
       <CardContent className="space-y-1">
         <h1 className="text-sm font-bold">Updated Today</h1>
         <div className="py-1 max-h-56 overflow-auto w-fit pr-2 rounded-md flex flex-col justify-center items-start gap-2 shadow-md outline outline-secondary">
-          {dailyManga.map((manga, index) => (
+          {dailyMangaFolders.map((manga, index) => (
             <MangaCard key={index} mangaFolder={manga} />
           ))}
         </div>
