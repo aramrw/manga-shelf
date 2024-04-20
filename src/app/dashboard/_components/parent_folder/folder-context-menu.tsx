@@ -8,7 +8,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { ParentFolderType } from "../../page";
+import { MangaFolderType, ParentFolderType } from "../../page";
 import { BackspaceIcon, FireIcon, FolderIcon } from "@heroicons/react/16/solid";
 import { invoke } from "@tauri-apps/api/tauri";
 import ParentFolder from "./parent-folder";
@@ -16,17 +16,20 @@ import ParentFolder from "./parent-folder";
 export default function FolderContextMenu({
   folder,
   isMangaFolder,
+  setMangaFolders,
   setParentFolders,
 	handleMangaClick,
 }: {
   folder: ParentFolderType;
   isMangaFolder?: boolean;
+  setMangaFolders: React.Dispatch<React.SetStateAction<MangaFolderType[]>>;
   setParentFolders: React.Dispatch<React.SetStateAction<ParentFolderType[]>>;
 	handleMangaClick?: (mangaFolderPath: string) => void;
 }) {
   const invokeDeleteFolder = (id: string, path: string, allData: boolean) => {
     invoke("delete_folder", { id, path, allData }).then(() => {
-      setParentFolders((prev) => prev.filter((f) => f.id !== id));
+      setMangaFolders((prev) => prev.filter((f) => f.id !== id));
+			setParentFolders((prev) => prev.filter((f) => f.id !== id));
     });
   };
 

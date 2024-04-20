@@ -20,7 +20,7 @@ export interface ParentFolderType {
 }
 
 export interface MangaFolderType extends ParentFolderType {
-  as_child: boolean;
+	time_spent_reading: number;
 }
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
@@ -137,6 +137,7 @@ export default function Dashboard() {
                   key={"parent" + index}
                   folder={folder}
                   setParentFolders={setParentFolders}
+									setMangaFolders={setMangaFolders}
                 />
               );
             })}
@@ -145,7 +146,8 @@ export default function Dashboard() {
               <FolderContexMenu
                 key={"manga" + index}
                 folder={folder}
-                setParentFolders={setMangaFolders}
+                setParentFolders={setParentFolders}
+								setMangaFolders={setMangaFolders}
                 handleMangaClick={handleMangaClick}
                 isMangaFolder
               />
