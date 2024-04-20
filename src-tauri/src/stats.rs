@@ -12,6 +12,7 @@ pub struct Stats {
     pub total_panels: u32,
     pub total_panels_read: u32,
     pub total_panels_remaining: u32,
+    pub total_time_spent_reading: u32,
 }
 
 #[tauri::command]
@@ -96,13 +97,20 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
     let mut total_panels: u32 = 0;
     let mut total_panels_read: u32 = 0;
     let mut total_panels_remaining: u32 = 0;
+    let mut total_time_spent_reading: u32 = 0;
 
-    for folder in manga_folders {
+    // count total panels, total panels read, total panels remaining
+    for folder in &manga_folders {
         let (total, total_read, total_remaining) = count_manga_panels(&folder.full_path, &manga_panels);
 
         total_panels += total;
         total_panels_read += total_read;
         total_panels_remaining += total_remaining;
+    }
+
+    // calculate total time spent reading
+    for folder in &manga_folders {
+        total_time_spent_reading += folder.time_spent_reading;
     }
 
 
@@ -111,6 +119,7 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         total_panels,
         total_panels_read,
         total_panels_remaining,
+        total_time_spent_reading,
     }
 
 }
