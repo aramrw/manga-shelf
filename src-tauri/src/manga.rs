@@ -25,7 +25,7 @@ pub struct MangaFolder {
     pub updated_at: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
+#[derive(Debug, Serialize, Clone, Deserialize, Default, sqlx::FromRow)]
 pub struct MangaPanel {
     pub id: String,
     pub title: String,

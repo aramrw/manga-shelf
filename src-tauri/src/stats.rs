@@ -8,10 +8,10 @@ use crate::manga::{MangaFolder, MangaPanel};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Stats {
-    pub total_manga: i32,
-    pub total_panels: i32,
-    pub total_panels_read: i32,
-    pub total_panels_remaining: i32,
+    pub total_manga: u32,
+    pub total_panels: u32,
+    pub total_panels_read: u32,
+    pub total_panels_remaining: u32,
 }
 
 #[tauri::command]
@@ -86,16 +86,23 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         .unwrap();
 
     // fetch all manga panels
-    
     let manga_panels: Vec<MangaPanel> = sqlx::query_as("SELECT * FROM manga_panel")
         .fetch_all(&pool)
         .await
         .unwrap();
 
-    let total_manga = manga_folders.iter().filter(|folder| folder.as_child).count() as i32;
-    let total_panels = manga_panels.len() as i32;
-    let total_panels_read = manga_panels.iter().filter(|panel| panel.is_read).count() as i32;
-    let total_panels_remaining = total_panels - total_panels_read;
+    let total_manga = manga_folders.len() as u32;
+    let mut total_panels: u32 = 0;
+    let mut total_panels_read: u32 = 0;
+    let mut total_panels_remaining: u32 = 0;
+
+    for folder in manga_folders {
+        let (total, total_read, total_remaining) = count_manga_panels(&folder.full_path, &manga_panels);
+
+        total_panels += total;
+        total_panels_read += total_read;
+        total_panels_remaining += total_remaining;
+    }
 
 
     Stats {
@@ -104,5 +111,36 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         total_panels_read,
         total_panels_remaining,
     }
+
+}
+
+fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) -> (u32, u32, u32) {
+
+    let file_types = ["jpg", "jpeg", "png", "webp"];
+    let manga_dir = std::fs::read_dir(manga_folder_dir).unwrap();
+    let mut total_panels: Vec<String> = Vec::new();
+    let mut total_panels_read: u32 = 0;
+
+
+    for entry in manga_dir {
+        let panel_path = entry.unwrap().path();
+        let file_type = panel_path.extension().unwrap().to_str().unwrap();
+
+        if file_types.contains(&file_type) {
+            total_panels.push(panel_path.to_str().unwrap().to_string());
+        }
+    }
+
+    for panel in manga_panels {
+        if panel.is_read {
+            total_panels_read += 1;
+        } 
+    }
+
+    //println!("Total panels: {}", total_panels.len());
+
+    let total_panels_remaining = total_panels.len() as u32 - total_panels_read;
+
+    (total_panels.len() as u32, total_panels_read, total_panels_remaining)
 
 }
