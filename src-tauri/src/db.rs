@@ -13,6 +13,7 @@ pub fn create_database(path: &str, handle: AppHandle) {
             let sqlite_pool = SqlitePool::connect_lazy(path).unwrap();
             handle.manage(Mutex::new(sqlite_pool.clone())); 
     
+            migrate_parent_folder_table(&sqlite_pool).await.unwrap();
             migrate_manga_folder_table(&sqlite_pool).await.unwrap();
             migrate_global_table(&sqlite_pool).await.unwrap();
             migrate_manga_panel_table(&sqlite_pool).await.unwrap();
@@ -21,6 +22,28 @@ pub fn create_database(path: &str, handle: AppHandle) {
         })
     }).unwrap();
 }
+
+pub async fn migrate_parent_folder_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS parent_folder
+        (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            full_path TEXT NOT NULL,
+            as_child BOOLEAN DEFAULT 0,
+            is_expanded BOOLEAN DEFAULT 0,
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(full_path)
+        )",
+    )
+    .execute(sqlite_pool)
+    .await?;
+
+    Ok(())
+}
+
+
 
 pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
