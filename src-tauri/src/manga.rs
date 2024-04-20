@@ -21,6 +21,7 @@ pub struct MangaFolder {
     pub full_path: String,
     pub as_child: bool,
     pub is_expanded: bool,
+    pub time_spent_reading: u32,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -135,7 +136,7 @@ pub async fn get_parent_folders(handle: AppHandle) -> Vec<ParentFolder> {
         parent_folders.push(parent_folder);
     }
 
-    parent_folders.retain(|folder| folder.as_child == false);
+    parent_folders.retain(|folder| !folder.as_child);
 
     // return the parent_folders vector back to the frontend
     parent_folders
@@ -166,6 +167,7 @@ pub async fn update_manga_folders(
             full_path: path.clone(),
             as_child,
             is_expanded,
+            time_spent_reading: 0,
             created_at: "".to_string(),
             updated_at: "".to_string(),
         };
@@ -180,12 +182,13 @@ pub async fn update_manga_folders(
             full_path, 
             as_child,
             is_expanded,
+            time_spent_reading,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
             datetime('now'), datetime('now')
         )
         ON CONFLICT (full_path) DO UPDATE SET
@@ -199,6 +202,7 @@ pub async fn update_manga_folders(
         .bind(path)
         .bind(as_child)
         .bind(is_expanded)
+        .bind(0)
         .execute(&pool)
         .await
         .unwrap();
@@ -225,6 +229,7 @@ pub async fn get_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             full_path: row.get("full_path"),
             as_child: row.get("as_child"),
             is_expanded: row.get("is_expanded"),
+            time_spent_reading: row.get("time_spent_reading"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         };
@@ -322,11 +327,15 @@ pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel
         return Err("Path is empty".to_string());
     }
 
-    let panel: MangaPanel = sqlx::query_as("SELECT * FROM manga_panel WHERE full_path = ?")
+    let panel: MangaPanel = match sqlx::query_as("SELECT * FROM manga_panel WHERE full_path = ?")
         .bind(path)
         .fetch_one(&pool)
-        .await
-        .unwrap();
+        .await {
+        Ok(panel) => panel,
+        Err(_) => {
+            return Err("Panel not found".to_string());
+        }
+    };
 
     Ok(panel)
 }
@@ -405,6 +414,23 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
 
     last
 }
+
+#[tauri::command]
+pub async fn update_folder_time_spent_reading(
+    folder_path: String,
+    time_spent_reading: u32,
+    handle: AppHandle,
+) {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    sqlx::query("UPDATE manga_folder SET time_spent_reading = ? WHERE full_path = ?")
+        .bind(time_spent_reading)
+        .bind(folder_path)
+        .execute(&pool)
+        .await
+        .unwrap();
+}
+
 
 // #[tauri::command]
 // pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
