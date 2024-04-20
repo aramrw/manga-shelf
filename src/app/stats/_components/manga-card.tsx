@@ -4,6 +4,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Separator } from "@/components/ui/separator";
 
 export default function MangaCard({
   mangaFolder,
@@ -34,11 +35,12 @@ export default function MangaCard({
         </HoverCardTrigger>
         <HoverCardContent className="w-fit px-1 flex flex-row justify-center items-center pt-0.5 pb-1.5">
           <ul className="flex flex-col justify-center items-center gap-0.5">
-            <li className="text-center flex underline flex-col justify-center items-center gap-0.5 text-[11px] font-bold">
+            <li className="text-center flex flex-col justify-center items-center gap-0.5 text-[11px] font-bold">
               <span className="bg-muted rounded-sm px-0.5">
                 {mangaFolder.title}
               </span>
             </li>
+            <Separator className="h-[1.1px] w-4/5" />
             <ul className="flex flex-row justify-center items-center gap-2">
               <li className="flex flex-col justify-center items-center ">
                 <label className="font-semibold text-[10px]">Updated</label>
@@ -58,9 +60,7 @@ export default function MangaCard({
                 Time Spent Reading
               </label>
               <span className="bg-accent-foreground rounded-sm px-0.5 font-medium text-[9px]">
-                {calculateTimeSpentReading(
-                  mangaFolder.time_spent_reading,
-                )}
+                {calculateTimeSpentReading(mangaFolder.time_spent_reading)}
               </span>
             </li>
           </ul>
