@@ -4,6 +4,7 @@ mod db;
 mod global;
 mod manga;
 mod misc;
+mod stats;
 
 fn main() {
     tauri::Builder::default()
@@ -30,6 +31,8 @@ fn main() {
             manga::delete_manga_folder,
             global::set_global_manga,
             global::get_global_manga,
+            stats::fetch_daily,
+            stats::create_stats,
             misc::show_in_folder,
         ])
         .run(tauri::generate_context!())
