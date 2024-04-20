@@ -23,7 +23,7 @@ export default function MainStats() {
   }, []);
 
   return (
-    <div className="w-full flex flex-col justify-center items-center h-fit bg-accent rounded-xl shadow-md outline outline-border p-2">
+    <div className="w-full flex flex-col justify-center items-center h-fit bg-card rounded-xl shadow-md outline outline-border p-2">
       <h1 className="font-bold rounded-md px-1">Main Stats</h1>
       <Separator className="h-[1.1px] w-[23.7rem] mb-1.5 mr-0.5" />
       <ul className="flex flex-row justify-center items-start gap-3 pb-0.5">
