@@ -15,7 +15,7 @@ export default function MangaCard({
     // if time (seconds) is greater than a minute render both minutes and seconds
     // else render only seconds
     if (time && time > 60) {
-      const minutes = time / 60;
+			const minutes = Math.floor(time / 60);
       const seconds = time % 60;
       return `${minutes}m ${seconds}s`;
     } else if (time) {

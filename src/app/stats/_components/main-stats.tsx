@@ -27,7 +27,7 @@ export default function MainStats() {
 		// if time (seconds) is greater than a minute render both minutes and seconds
 		// else render only seconds
 		if (time && time > 60) {
-			const minutes = time / 60;
+			const minutes = Math.floor(time / 60);
 			const seconds = time % 60;
 			return `${minutes}m ${seconds}s`;
 		} else if (time) {
@@ -69,6 +69,7 @@ export default function MainStats() {
             {mainStats?.total_panels_remaining}
           </span>
         </li>
+        <Separator className="w-[1.1px] h-9" />
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs">
           <label className="font-semibold underline">Time Spent Reading</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
