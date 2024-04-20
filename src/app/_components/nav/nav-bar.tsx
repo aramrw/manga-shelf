@@ -12,6 +12,8 @@ export default function NavBar() {
   const router = useRouter();
   const pathname = usePathname();
   const [startTime, setStartTime] = useState<number>(0);
+  const [wasPreviousPathManga, setWasPreviousPathManga] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (pathname == "/") {
@@ -19,18 +21,22 @@ export default function NavBar() {
     }
 
     if (pathname == "/manga") {
-			setStartTime(new Date().getTime());
+      setStartTime(new Date().getUTCSeconds());
+      setWasPreviousPathManga(true);
     } else {
-      const elapsedTime = new Date().getTime() - startTime;
+      if (wasPreviousPathManga) {
+        setWasPreviousPathManga(false);
+        const elapsedTime = new Date().getUTCSeconds() - startTime;
+        invoke("get_global_manga").then((result: unknown) => {
+          invoke("update_folder_time_spent_reading", {
+            folderPath: (result as MangaFolderType).full_path,
+            timeSpentReading: elapsedTime,
+          });
+        });
 
-      invoke("get_global_manga").then((result: unknown) => {
-        invoke("update_folder_time_spent_reading", {
-					folderPath: (result as MangaFolderType).full_path,
-					timeSpentReading: elapsedTime,
-				});
-      });
-
-      setStartTime(0);
+        setStartTime(0);
+      }
+			setWasPreviousPathManga(false);
     }
   }, [pathname]);
 
