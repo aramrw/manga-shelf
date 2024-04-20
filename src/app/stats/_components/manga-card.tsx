@@ -11,27 +11,34 @@ export default function MangaCard({
   mangaFolder: ParentFolderType;
 }) {
   return (
-    <div className="px-1 h-full shadow-sm">
+    <div className="px-1 h-fit shadow-sm w-full">
       <HoverCard>
         <HoverCardTrigger>
-          <h2 className="text-xs font-semibold cursor-pointer">
+          <h2 className="text-xs font-semibold cursor-pointer overflow-hidden text-nowrap">
             {mangaFolder.title}
           </h2>
         </HoverCardTrigger>
-        <HoverCardContent className="px-1 flex flex-row justify-center items-center pt-0 pb-1.5">
+        <HoverCardContent className="w-fit px-1 flex flex-row justify-center items-center pt-0 pb-1.5">
           <ul className="flex flex-col justify-center items-center gap-0.5">
-            <li className="flex flex-col justify-center items-center gap-0.5 text-xs">
-              <label className="font-semibold underline">Updated</label>
-              <span className="font-medium bg-accent-foreground rounded-sm px-0.5 outline outline-primary">
-                {mangaFolder.updated_at}
-              </span>
-            </li>
-            <li className="flex flex-col justify-center items-center gap-0.5 text-xs">
-              <label className="font-semibold underline">Created</label>
-              <span className="font-medium bg-accent-foreground rounded-sm px-0.5 outline outline-primary">
-                {mangaFolder.created_at}
-              </span>
-            </li>
+						<li className="text-center flex underline flex-col justify-center items-center gap-0.5 text-[11px] font-bold">
+							<span className="bg-muted rounded-sm px-0.5">
+								{mangaFolder.title}
+							</span>
+						</li>
+            <ul className="flex flex-row justify-center items-center gap-2">
+              <li className="flex flex-col justify-center items-center text-[9px]">
+                <label className="font-semibold">Updated</label>
+                <span className="font-medium bg-muted rounded-sm px-0.5">
+                  {mangaFolder.updated_at}
+                </span>
+              </li>
+              <li className="flex flex-col justify-center items-center text-[9px]">
+                <label className="font-semibold">Created</label>
+                <span className="font-medium bg-muted rounded-sm px-0.5">
+                  {mangaFolder.created_at}
+                </span>
+              </li>
+            </ul>
           </ul>
         </HoverCardContent>
       </HoverCard>
