@@ -73,3 +73,36 @@ pub async fn fetch_daily(handle: AppHandle) -> Vec<MangaFolder> {
     }
     daily_manga
 }
+
+#[tauri::command]
+pub async fn create_stats(handle: AppHandle) -> Stats {
+
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    // fetch all manga folders
+    let manga_folders: Vec<MangaFolder> = sqlx::query_as("SELECT * FROM manga_folder")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    // fetch all manga panels
+    
+    let manga_panels: Vec<MangaPanel> = sqlx::query_as("SELECT * FROM manga_panel")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    let total_manga = manga_folders.iter().filter(|folder| folder.as_child).count() as i32;
+    let total_panels = manga_panels.len() as i32;
+    let total_panels_read = manga_panels.iter().filter(|panel| panel.is_read).count() as i32;
+    let total_panels_remaining = total_panels - total_panels_read;
+
+
+    Stats {
+        total_manga,
+        total_panels,
+        total_panels_read,
+        total_panels_remaining,
+    }
+
+}
