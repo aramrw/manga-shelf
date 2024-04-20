@@ -21,21 +21,20 @@ export default function NavBar() {
     }
 
     if (pathname == "/manga") {
-      setStartTime(new Date().getUTCSeconds());
+      setStartTime(Date.now());
       setWasPreviousPathManga(true);
     } else {
       if (wasPreviousPathManga) {
-        setWasPreviousPathManga(false);
-        const elapsedTime = new Date().getUTCSeconds() - startTime;
+				const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
         invoke("get_global_manga").then((result: unknown) => {
           invoke("update_folder_time_spent_reading", {
             folderPath: (result as MangaFolderType).full_path,
             timeSpentReading: elapsedTime,
           });
         });
-
         setStartTime(0);
       }
+			
 			setWasPreviousPathManga(false);
     }
   }, [pathname]);
