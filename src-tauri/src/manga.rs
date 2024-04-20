@@ -91,11 +91,11 @@ pub async fn update_parent_folders(
         VALUES
         (
             ?, ?, ?, ?, ?,
-            datetime('now'), datetime('now')
+            datetime('now', 'localtime'), datetime('now', 'localtime')
         )
         ON CONFLICT (full_path) DO UPDATE SET
         is_expanded = excluded.is_expanded,
-        updated_at = datetime('now')
+        updated_at = datetime('now', 'localtime')
         ",
         )
         .bind(uuid)
@@ -189,12 +189,12 @@ pub async fn update_manga_folders(
         VALUES
         (
             ?, ?, ?, ?, ?, ?,
-            datetime('now'), datetime('now')
+            datetime('now', 'localtime'), datetime('now', 'localtime')
         )
         ON CONFLICT (full_path) DO UPDATE SET
         as_child = excluded.as_child,
         is_expanded = excluded.is_expanded,
-        updated_at = datetime('now')
+        updated_at = datetime('now', 'localtime')
         ",
         )
         .bind(uuid)
@@ -288,11 +288,11 @@ pub async fn update_manga_panel(
         VALUES
         (
             ?, ?, ?, ?, ?, ?, ?,
-            datetime('now'), datetime('now')
+            datetime('now', 'localtime'), datetime('now', 'localtime')
         )
         ON CONFLICT (full_path) DO UPDATE SET
             is_read = excluded.is_read,
-            updated_at = datetime('now')",
+            updated_at = datetime('now', 'localtime')",
         )
         .bind(uuid)
         .bind(split_path.file_name)
@@ -423,7 +423,7 @@ pub async fn update_folder_time_spent_reading(
 ) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
-    sqlx::query("UPDATE manga_folder SET time_spent_reading = ? WHERE full_path = ?")
+    sqlx::query("UPDATE manga_folder SET time_spent_reading = time_spent_reading + ?, updated_at = datetime('now', 'localtime') WHERE full_path = ?")
         .bind(time_spent_reading)
         .bind(folder_path)
         .execute(&pool)
