@@ -10,11 +10,11 @@ pub struct GlobalError {
 }
 
 #[tauri::command]
-pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), GlobalError>  {
+pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), GlobalError> {
     // This function will be called from the fe
     // and will update the current manga in the global scope
     // so that it can be accessed from anywhere in the app
-    
+
     //println!("Setting global manga: {}", full_path);
 
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
@@ -33,12 +33,13 @@ pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), 
             full_path, 
             as_child,
             is_expanded,
+            time_spent_reading,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?
         )",
     )
     .bind(current_manga.id)
@@ -46,6 +47,7 @@ pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), 
     .bind(current_manga.full_path)
     .bind(current_manga.as_child)
     .bind(current_manga.is_expanded)
+    .bind(current_manga.time_spent_reading)
     .bind(current_manga.created_at)
     .bind(current_manga.updated_at)
     .execute(&pool)
@@ -56,7 +58,7 @@ pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), 
 }
 
 #[tauri::command]
-pub async fn get_global_manga(handle: AppHandle) -> MangaFolder {
+pub async fn get_global_manga(handle: AppHandle) -> Option<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     let result = sqlx::query("SELECT * FROM global_manga")
@@ -64,15 +66,16 @@ pub async fn get_global_manga(handle: AppHandle) -> MangaFolder {
         .await
         .unwrap();
 
-    MangaFolder {
+    Some(MangaFolder {
         id: result.get("id"),
         title: result.get("title"),
         full_path: result.get("full_path"),
         as_child: result.get("as_child"),
         is_expanded: result.get("is_expanded"),
+        time_spent_reading: result.get("time_spent_reading"),
         created_at: result.get("created_at"),
         updated_at: result.get("updated_at"),
-    }
+    })
 }
 
 pub async fn get_manga_by_path(full_path: &str, pool: &SqlitePool) -> MangaFolder {
@@ -89,9 +92,8 @@ pub async fn get_manga_by_path(full_path: &str, pool: &SqlitePool) -> MangaFolde
         full_path: result.get("full_path"),
         as_child: result.get("as_child"),
         is_expanded: result.get("is_expanded"),
+        time_spent_reading: result.get("time_spent_reading"),
         created_at: result.get("created_at"),
         updated_at: result.get("updated_at"),
     }
 }
-
-

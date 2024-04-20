@@ -54,6 +54,7 @@ pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), 
             full_path TEXT NOT NULL,
             as_child BOOLEAN DEFAULT 0,
             is_expanded BOOLEAN DEFAULT 0,
+            time_spent_reading INTEGER DEFAULT 0,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
@@ -74,6 +75,7 @@ pub async fn migrate_global_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
             full_path TEXT NOT NULL,
             as_child BOOLEAN DEFAULT 0,
             is_expanded BOOLEAN DEFAULT 0,
+            time_spent_reading INTEGER DEFAULT 0,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
