@@ -4,6 +4,17 @@ use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
 
 #[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
+pub struct ParentFolder {
+    pub id: String,
+    pub title: String,
+    pub full_path: String,
+    pub as_child: bool,
+    pub is_expanded: bool,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
 pub struct MangaFolder {
     pub id: String,
     pub title: String,
@@ -32,6 +43,102 @@ pub struct PathParts {
     pub parent: String,
     pub file_name: String,
     pub extension: Option<String>,
+}
+
+#[tauri::command]
+pub async fn update_parent_folders(
+    dir_paths: String,
+    handle: AppHandle,
+    as_child: bool,
+    is_expanded: bool,
+) -> Vec<ParentFolder> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    let parsed_paths = serde_json::from_str::<Vec<String>>(&dir_paths).unwrap();
+
+    // create a ParentFolder vector to return back to the frontend
+    let mut parent_folders: Vec<ParentFolder> = Vec::new();
+
+    for path in parsed_paths {
+        let uuid = uuid::Uuid::new_v4().to_string();
+        // gets the parent, file name, and extension of the path
+        let split_path = split_path_parts(&path);
+
+        // create a ParentFolder struct to push into the parent_folders vector
+        let folder = ParentFolder {
+            id: uuid.clone(),
+            title: split_path.file_name.clone(),
+            full_path: path.clone(),
+            as_child,
+            is_expanded,
+            created_at: "".to_string(),
+            updated_at: "".to_string(),
+        };
+
+        parent_folders.push(folder);
+
+        sqlx::query(
+            "INSERT INTO parent_folder 
+        (
+            id, 
+            title, 
+            full_path, 
+            as_child,
+            is_expanded,
+            created_at, 
+            updated_at
+        ) 
+        VALUES
+        (
+            ?, ?, ?, ?, ?,
+            datetime('now'), datetime('now')
+        )
+        ON CONFLICT (full_path) DO UPDATE SET
+        is_expanded = excluded.is_expanded,
+        updated_at = datetime('now')
+        ",
+        )
+        .bind(uuid)
+        .bind(split_path.file_name)
+        .bind(path)
+        .bind(as_child)
+        .bind(is_expanded)
+        .execute(&pool)
+        .await
+        .unwrap();
+    }
+
+    // return the parent_folders vector back to the frontend
+    parent_folders
+}
+
+#[tauri::command]
+pub async fn get_parent_folders(handle: AppHandle) -> Vec<ParentFolder> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    let mut parent_folders: Vec<ParentFolder> = Vec::new();
+    let result = sqlx::query("SELECT * FROM parent_folder")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    for row in result {
+        let parent_folder = ParentFolder {
+            id: row.get("id"),
+            title: row.get("title"),
+            full_path: row.get("full_path"),
+            as_child: row.get("as_child"),
+            is_expanded: row.get("is_expanded"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+        };
+
+        parent_folders.push(parent_folder);
+    }
+
+    parent_folders.retain(|folder| folder.as_child == false);
+
+    // return the parent_folders vector back to the frontend
+    parent_folders
 }
 
 #[tauri::command]
@@ -102,7 +209,7 @@ pub async fn update_manga_folders(
 }
 
 #[tauri::command]
-pub async fn get_manga_folders(handle: AppHandle) -> String {
+pub async fn get_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     let mut manga_folders: Vec<MangaFolder> = Vec::new();
@@ -125,8 +232,10 @@ pub async fn get_manga_folders(handle: AppHandle) -> String {
         manga_folders.push(manga_folder);
     }
 
+    manga_folders.retain(|folder| !folder.as_child);
+
     // return the manga_folders vector back to the frontend
-    serde_json::to_string(&manga_folders).unwrap()
+    manga_folders
 }
 
 #[tauri::command]
@@ -205,36 +314,6 @@ pub async fn update_manga_panel(
     //manga_panels
 }
 
-// #[tauri::command]
-// pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
-//     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-//
-//     let mut manga_panels: Vec<MangaPanel> = Vec::new();
-//     let result = sqlx::query("SELECT * FROM manga_chapter")
-//         .fetch_all(&pool)
-//         .await
-//         .unwrap();
-//
-//     for row in result {
-//         let manga_panel = MangaPanel {
-//             id: row.get("id"),
-//             title: row.get("title"),
-//             full_path: row.get("full_path"),
-//             is_read: row.get("is_read"),
-//             width: row.get("width"),
-//             height: row.get("height"),
-//             zoom_level: row.get("zoom_level"),
-//             created_at: row.get("created_at"),
-//             updated_at: row.get("updated_at"),
-//         };
-//
-//         manga_panels.push(manga_panel);
-//     }
-//
-//     // return the manga_panel vector back to the frontend
-//     manga_panels
-// }
-//
 #[tauri::command]
 pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel, String> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
@@ -253,8 +332,10 @@ pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel
 }
 
 #[tauri::command]
-pub async fn delete_manga_folder(id: String, path: String, handle: AppHandle, all_data: bool) {
+pub async fn delete_folder(id: String, path: String, all_data: bool, handle: AppHandle) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    //println!("Deleting folder: {}", path);
 
     // delete any folders that contain the main folder module_path!()
     sqlx::query("DELETE FROM manga_folder WHERE full_path LIKE ? || '%'")
@@ -264,8 +345,8 @@ pub async fn delete_manga_folder(id: String, path: String, handle: AppHandle, al
         .unwrap();
 
     // delete the main folder
-    sqlx::query("DELETE FROM manga_folder WHERE id = ?")
-        .bind(id)
+    sqlx::query("DELETE FROM parent_folder where full_path LIKE ? || '%'")
+        .bind(&path)
         .execute(&pool)
         .await
         .unwrap();
@@ -324,3 +405,34 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
 
     last
 }
+
+// #[tauri::command]
+// pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
+//     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+//
+//     let mut manga_panels: Vec<MangaPanel> = Vec::new();
+//     let result = sqlx::query("SELECT * FROM manga_chapter")
+//         .fetch_all(&pool)
+//         .await
+//         .unwrap();
+//
+//     for row in result {
+//         let manga_panel = MangaPanel {
+//             id: row.get("id"),
+//             title: row.get("title"),
+//             full_path: row.get("full_path"),
+//             is_read: row.get("is_read"),
+//             width: row.get("width"),
+//             height: row.get("height"),
+//             zoom_level: row.get("zoom_level"),
+//             created_at: row.get("created_at"),
+//             updated_at: row.get("updated_at"),
+//         };
+//
+//         manga_panels.push(manga_panel);
+//     }
+//
+//     // return the manga_panel vector back to the frontend
+//     manga_panels
+// }
+//
