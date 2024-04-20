@@ -16,6 +16,8 @@ import MonthlyTab from "./monthly-tab/monthly-tab";
 import YearlyTab from "./yearly-tab/yearly-tab";
 
 export default function TimeTabs() {
+
+
   return (
     <Tabs defaultValue="daily" className="w-full">
       <TabsList className="grid w-full grid-cols-4">
