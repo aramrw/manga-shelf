@@ -96,6 +96,8 @@ const MangaHeader = ({
       handlePreviousPanel,
       handleNextSinglePanel,
       handlePreviousSinglePanel,
+			handleSetFirstPanel,
+			handleSetLastPanel,
       handleMagnify,
       handleMinify,
       largePanel,
@@ -112,7 +114,7 @@ const MangaHeader = ({
 
   return (
     <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center border-b-2 border-accent shadow-sm">
-      <menu className="w-full h-full flex flex-row justify-center items-center">
+      <menu className="w-full h-full flex flex-row justify-center items-center gap-1.5">
         <ul className="w-fit h-fit flex flex-row justify-center items-center gap-1">
           <li className="flex flex-row justify-center items-center">
             <Button className="py-0.5 px-1 shadow-lg" onClick={handleMagnify}>
@@ -137,7 +139,7 @@ const MangaHeader = ({
             </Button>
           </li>
           <li className="flex flex-row justify-center items-center select-none">
-            <h1 className="font-bold text-sm">{currentManga.title}</h1>
+            <h1 className="font-bold text-sm overflow-auto text-nowrap">{currentManga.title}</h1>
           </li>
           <li className="flex flex-row justify-center items-center">
             <Button className="p-0 shadow-lg" onClick={handlePreviousPanel}>
