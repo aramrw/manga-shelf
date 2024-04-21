@@ -133,9 +133,9 @@ export default function Dashboard() {
           </span>
         </Button>
         <ul className="w-full h-full">
-            {parentFolders.length > 0 && (
-          <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
-							{parentFolders.map((folder, index) => {
+          {parentFolders.length > 0 && (
+            <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
+              {parentFolders.map((folder, index) => {
                 return (
                   <FolderContexMenu
                     key={"parent" + index}
@@ -145,8 +145,8 @@ export default function Dashboard() {
                   />
                 );
               })}
-          </ul>
-					)}
+            </ul>
+          )}
           {mangaFolders.length > 0 && (
             <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
               {mangaFolders.map((folder, index) => (

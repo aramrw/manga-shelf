@@ -95,34 +95,46 @@ export default function ParentFolder({
   };
 
   return (
-    <main
+    <ul
       className={cn(
         `
-			h-fit
-			w-full 
-			p-1 
-			bg-primary
-			flex 
-			flex-col
-			justify-center
-			items-center
-			text-center
-			rounded-sm
-			cursor-pointer
-			will-change-transform
-			shadow-sm
+					h-fit
+					w-full 
+					p-1 
+					bg-primary
+					flex 
+					flex-col
+					justify-center
+					items-center
+					text-center
+					rounded-sm
+					cursor-pointer
+					will-change-transform
+					shadow-sm
 				`,
         !isExpanded &&
-          !parentFolder.as_child &&
-          "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
+        !parentFolder.as_child &&
+        "hover:scale-[1.005] transition-transform duration-100 ease-in-out",
         parentFolder.as_child && "p-0 rounded-none text-xs",
       )}
     >
-      <div
+      <li
+        tabIndex={0}
         className={cn(
-          "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary",
+          "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary focus:outline focus:outline-0 focus:ring-2 focus:ring-accent-foreground focus:ring-opacity-50",
           parentFolder.as_child && "bg-accent-foreground",
         )}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            invoke("update_parent_folders", {
+              dirPaths: JSON.stringify([parentFolder.full_path]),
+              asChild: parentFolder.as_child,
+              isExpanded: !isExpanded,
+            });
+
+            setIsExpanded(!isExpanded);
+          }
+        }}
         onClick={() => {
           invoke("update_parent_folders", {
             dirPaths: JSON.stringify([parentFolder.full_path]),
@@ -136,26 +148,36 @@ export default function ParentFolder({
         <h1 className="font-bold w-full overflow-hidden text-nowrap">
           {parentFolder.title}
         </h1>
-      </div>
+      </li>
       {isExpanded && (
         <>
-          <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
-            {parentFolders.map((folder, index) => (
-              <ParentFolder
-                key={`${folder.id}-${index}`}
-                parentFolder={folder}
-              />
-            ))}
-          </div>
-          <div className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
+          {parentFolders.length > 0 && (
+            <li className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
+              {parentFolders.map((folder, index) => (
+                <ParentFolder
+                  key={`${folder.id}-${index}`}
+                  parentFolder={folder}
+                />
+              ))}
+            </li>
+          )}
+          <li
+            className="w-full h-fit flex flex-col justify-center items-center bg-secondary"
+          >
             {mangaFolders.map((mangaFolder, index) => (
               <HoverCard key={`${mangaFolder.full_path}-${index}`}>
                 <HoverCardTrigger className="w-full h-full">
                   <h1
+										tabIndex={0}
                     className={cn(
-                      "z-50 bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full",
+                      "z-50 bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full focus:outline focus:outline-0 focus:ring-2 focus:ring-accent-foreground focus:ring-opacity-50 ",
                     )}
                     onClick={() => handleMangaClick(mangaFolder.full_path)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") {
+												handleMangaClick(mangaFolder.full_path);
+											}
+										}}
                   >
                     {mangaFolder.title}
                   </h1>
@@ -165,9 +187,9 @@ export default function ParentFolder({
                 </HoverCardContent>
               </HoverCard>
             ))}
-          </div>
+          </li>
         </>
       )}
-    </main>
+    </ul>
   );
 }

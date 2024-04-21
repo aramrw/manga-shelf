@@ -25,7 +25,7 @@ export default function NavBar() {
       setWasPreviousPathManga(true);
     } else {
       if (wasPreviousPathManga) {
-				const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
         invoke("get_global_manga").then((result: unknown) => {
           invoke("update_folder_time_spent_reading", {
             folderPath: (result as MangaFolderType).full_path,
@@ -34,8 +34,8 @@ export default function NavBar() {
         });
         setStartTime(0);
       }
-			
-			setWasPreviousPathManga(false);
+
+      setWasPreviousPathManga(false);
     }
   }, [pathname]);
 
@@ -53,7 +53,9 @@ export default function NavBar() {
           onClick={handleGoBack}
           className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent"
         >
-          <ArrowLeftStartOnRectangleIcon className="w-5 h-auto" />
+          <Link href="">
+            <ArrowLeftStartOnRectangleIcon className="w-5 h-auto" />
+          </Link>
         </li>
         <ul className="flex flex-row gap-1">
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
