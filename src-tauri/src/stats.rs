@@ -1,6 +1,5 @@
 use crate::manga::{MangaFolder, MangaPanel};
-use chrono::format::ParseError;
-use chrono::{DateTime, Local, NaiveDateTime, Utc};
+use chrono::{Local, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 use tauri::{AppHandle, Manager};
@@ -13,6 +12,13 @@ pub struct Stats {
     pub total_panels_read: u32,
     pub total_panels_remaining: u32,
     pub total_time_spent_reading: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct MangaStats {
+    pub total_panels: u32,
+    pub total_panels_read: u32,
+    pub total_panels_remaining: u32,
 }
 
 #[tauri::command]
@@ -41,7 +47,7 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             updated_at: row.get("updated_at"),
         };
 
-        // parse created_at and updated_at from sqlite 'localtime' 
+        // parse created_at and updated_at from sqlite 'localtime'
 
         let updated_at =
             NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
@@ -57,11 +63,33 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
         } else {
             println!("Not today: {}", current_manga.title);
         }
-
     }
 
     daily_manga
 }
+
+#[tauri::command]
+pub async fn create_manga_stats(handle: AppHandle, folder_path: String) -> MangaStats {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    // fetch all manga panels
+    let manga_panels: Vec<MangaPanel> = sqlx::query_as("SELECT * FROM manga_panel WHERE full_path LIKE ? || '%'")
+        .bind(&folder_path)
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    //println!("Folder path: {}", manga_panels.len());
+
+    let (total, total_read, total_remaining) = count_manga_panels(&folder_path, &manga_panels);
+
+    MangaStats {
+        total_panels: total,
+        total_panels_read: total_read,
+        total_panels_remaining: total_remaining,
+    }
+}
+    
 
 #[tauri::command]
 pub async fn create_stats(handle: AppHandle) -> Stats {
