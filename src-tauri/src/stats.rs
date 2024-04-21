@@ -41,39 +41,25 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             updated_at: row.get("updated_at"),
         };
 
-        // Parse the strings into NaiveDateTime
-        let created_at: Result<NaiveDateTime, ParseError> =
-            NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S");
-        let updated_at: Result<NaiveDateTime, ParseError> =
-            NaiveDateTime::parse_from_str(&current_manga.updated_at, "%Y-%m-%d %H:%M:%S");
+        // parse created_at and updated_at from sqlite 'localtime' 
 
-        match (created_at, updated_at) {
-            (Ok(created_at), Ok(updated_at)) => {
-                // Convert NaiveDateTime to DateTime<Utc>
-                let created_at_utc: DateTime<Utc> =
-                    DateTime::from_naive_utc_and_offset(created_at, Utc);
-                let updated_at_utc: DateTime<Utc> =
-                    DateTime::from_naive_utc_and_offset(updated_at, Utc);
+        let updated_at =
+            NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
+        let created_at =
+            NaiveDateTime::parse_from_str(&current_manga.updated_at, "%Y-%m-%d %H:%M:%S").unwrap();
 
-                // Convert DateTime<Utc> to local DateTime
-                let created_at_local = created_at_utc.with_timezone(&Local);
-                let updated_at_local = updated_at_utc.with_timezone(&Local);
+        // check if created_at and updated_at are today
 
-                let created_at_date = created_at_local.date_naive();
-                let updated_at_date = updated_at_local.date_naive();
-                let today = Local::now();
+        let today = Local::now().naive_local().date();
 
-                if created_at_date == today.date_naive()
-                    || updated_at_date == today.date_naive() && current_manga.as_child
-                {
-                    daily_manga.push(current_manga);
-                }
-            }
-            _ => {
-                println!("Failed to parse date time");
-            }
+        if updated_at.date() == today || created_at.date() == today {
+            daily_manga.push(current_manga);
+        } else {
+            println!("Not today: {}", current_manga.title);
         }
+
     }
+
     daily_manga
 }
 
