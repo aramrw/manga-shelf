@@ -14,7 +14,7 @@ pub struct ParentFolder {
     pub updated_at: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
+#[derive(Debug, Serialize, Clone, Deserialize, Default, sqlx::FromRow)]
 pub struct MangaFolder {
     pub id: String,
     pub title: String,
@@ -330,7 +330,8 @@ pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel
     let panel: MangaPanel = match sqlx::query_as("SELECT * FROM manga_panel WHERE full_path = ?")
         .bind(path)
         .fetch_one(&pool)
-        .await {
+        .await
+    {
         Ok(panel) => panel,
         Err(_) => {
             return Err("Panel not found".to_string());
@@ -396,6 +397,48 @@ fn get_panel_image_dimensions(panel_image_path: &str) -> (u16, u16) {
 }
 
 #[tauri::command]
+pub async fn get_next_or_previous_manga_folder(
+    current_folder_path: String,
+    is_next: bool,
+    handle: AppHandle,
+) -> Option<MangaFolder> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    let parent_path = std::path::Path::new(&current_folder_path)
+        .parent()
+        .unwrap()
+        .to_str()
+        .unwrap();
+
+    let manga_folder: Vec<MangaFolder> =
+        sqlx::query_as("SELECT * FROM manga_folder WHERE full_path LIKE ? || '%'")
+            .bind(parent_path)
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+
+    // find the index in the vector where the current folder is
+    let index = manga_folder
+        .iter()
+        .position(|x| x.full_path == current_folder_path)
+        .unwrap();
+
+    // return the next folder in the vector
+
+    if is_next {
+        if index + 1 >= manga_folder.len() {
+            return None;
+        }
+        Some(manga_folder[index + 1].clone())
+    } else {
+        if index == 0 {
+            return None;
+        }
+        Some(manga_folder[index - 1].clone())
+    }
+}
+
+#[tauri::command]
 pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> usize {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
@@ -430,7 +473,6 @@ pub async fn update_folder_time_spent_reading(
         .await
         .unwrap();
 }
-
 
 // #[tauri::command]
 // pub async fn get_manga_panels(handle: AppHandle) -> Vec<MangaPanel> {
