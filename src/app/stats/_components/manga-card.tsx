@@ -43,7 +43,7 @@ export default function MangaCard({
         setStats(stats as MangaStatsType);
       },
     );
-  }, []);
+  }, [mangaFolder.full_path]);
 
   return (
     <div className="px-1 h-fit shadow-sm w-full">

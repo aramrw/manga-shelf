@@ -31,8 +31,6 @@ export default function Manga() {
     useState<MangaPanelType | null>(null);
   const [zoomLevel, setZoomLevel] = useState(490);
 
-  const router = useRouter();
-
   useEffect(() => {
     fetchGlobalManga().then((manga) => {
       if (manga) {
@@ -81,7 +79,7 @@ export default function Manga() {
   }, [currentManga]);
 
   const invokeGetCurrentPanel = useCallback(() => {
-    if (currentManga) {
+    if (currentManga && mangaPanels.length > 0 && mangaPanels[currentPanelIndex] ) {
       invoke("get_manga_panel", {
         path: mangaPanels[currentPanelIndex].path,
       }).then((panel: unknown) => {
@@ -267,14 +265,14 @@ export default function Manga() {
               handlePreviousSinglePanel={handlePreviousSinglePanel}
               handleSetLastPanel={handleSetLastPanel}
               handleSetFirstPanel={handleSetFirstPanel}
-              largePanel={currentMangaPanel.width > 1500}
+              largePanel={currentMangaPanel.width > 1700}
               currentPanelPath={mangaPanels[currentPanelIndex].path}
               zoomLevel={zoomLevel}
               setZoomLevel={setZoomLevel}
             />
             <div className="flex flex-row justify-center items-center">
               <>
-                {currentMangaPanel.width < 1500 &&
+                {currentMangaPanel.width < 1700 &&
                   mangaPanels[currentPanelIndex + 1] && (
                     <MangaPanel
                       key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
