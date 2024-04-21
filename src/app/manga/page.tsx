@@ -1,12 +1,13 @@
 "use client";
 
-import { ParentFolderType } from "../dashboard/page";
+import { MangaFolderType, ParentFolderType } from "../dashboard/page";
 import fetchGlobalManga from "./_components/lib/fetch-global-manga";
 import MangaHeader from "./_components/manga-header";
 import { useCallback, useEffect, useState } from "react";
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 import MangaPanel from "./_components/manga-panel";
+import { useRouter } from "next/navigation";
 
 export type MangaPanelType = {
   id: string;
@@ -30,42 +31,46 @@ export default function Manga() {
     useState<MangaPanelType | null>(null);
   const [zoomLevel, setZoomLevel] = useState(490);
 
+  const router = useRouter();
+
   useEffect(() => {
     fetchGlobalManga().then((manga) => {
       if (manga) {
         setCurrentManga(manga);
-        readDir(manga.full_path).then((result) => {
-          if (result) {
-            let sorted = result.sort((a, b) => {
-              if (a.name && b.name) {
-                return a.name.localeCompare(b.name, undefined, {
-                  numeric: true,
-                });
-              } else if (a.name) {
-                return -1; // a is sorted to a lower index than b
-              } else if (b.name) {
-                return 1; // b is sorted to a lower index than a
-              } else {
-                return 0; // both a and b are undefined, so they're considered equal
-              }
-            });
-
-            setMangaPanels(sorted);
-            // always update the first panel as read because
-            // the handles only invoke starting from the second panel
-            invoke("update_manga_panel", {
-              dirPaths: JSON.stringify([result[0].path]),
-              isRead: true,
-              zoomLevel: 0,
-            });
-          }
-        });
       }
     });
   }, []);
 
   const invokeFindLastReadPanel = useCallback(() => {
     if (currentManga) {
+      console.log("currentManga:", currentManga);
+      readDir(currentManga.full_path).then((result) => {
+        if (result) {
+          let sorted = result.sort((a, b) => {
+            if (a.name && b.name) {
+              return a.name.localeCompare(b.name, undefined, {
+                numeric: true,
+              });
+            } else if (a.name) {
+              return -1; // a is sorted to a lower index than b
+            } else if (b.name) {
+              return 1; // b is sorted to a lower index than a
+            } else {
+              return 0; // both a and b are undefined, so they're considered equal
+            }
+          });
+
+          setMangaPanels(sorted);
+          // always update the first panel as read because
+          // the handles only invoke starting from the second panel
+          invoke("update_manga_panel", {
+            dirPaths: JSON.stringify([result[0].path]),
+            isRead: true,
+            zoomLevel: 0,
+          });
+        }
+      });
+
       invoke("find_last_read_panel", {
         chapterPath: currentManga.full_path,
       }).then((lastReadPanelIndex: unknown) => {
@@ -109,10 +114,6 @@ export default function Manga() {
   useEffect(() => {
     if (currentManga) invokeFindLastReadPanel();
   }, [currentManga, invokeFindLastReadPanel]);
-
-  useEffect(() => {
-    console.log("currentPanelIndex:", currentMangaPanel);
-  }, [currentMangaPanel]);
 
   // previous panels
   const handlePreviousPanel = () => {
@@ -180,13 +181,33 @@ export default function Manga() {
   };
 
   const handleSetLastPanel = () => {
-		const panelDirs: string[] = [];
-		for (const panel of mangaPanels) {
-			panelDirs.push(panel.path);
-		}
+    const panelDirs: string[] = [];
+    for (const panel of mangaPanels) {
+      panelDirs.push(panel.path);
+    }
+
+    // if user is already at the last panel
+    // push router to next manga folder if any
+
+    if (currentPanelIndex === mangaPanels.length - 1) {
+      invoke("get_next_or_previous_manga_folder", {
+        currentFolderPath: currentManga?.full_path,
+        isNext: true,
+      }).then((nextFolder: unknown) => {
+        console.log("nextFolder:", nextFolder);
+        if (nextFolder) {
+          invoke("set_global_manga", {
+            fullPath: (nextFolder as MangaFolderType).full_path,
+          }).then(() => {
+            setCurrentManga(nextFolder as ParentFolderType);
+          });
+        }
+      });
+    }
+
     if (mangaPanels.length > 0) {
       invoke("update_manga_panel", {
-        dirPaths: (JSON.stringify(panelDirs)),
+        dirPaths: JSON.stringify(panelDirs),
         isRead: true,
         zoomLevel: zoomLevel,
       });
@@ -195,13 +216,33 @@ export default function Manga() {
   };
 
   const handleSetFirstPanel = () => {
-		const panelDirs: string[] = [];
-		for (const panel of mangaPanels) {
-			panelDirs.push(panel.path);
-		}
+    const panelDirs: string[] = [];
+    for (const panel of mangaPanels) {
+      panelDirs.push(panel.path);
+    }
+
+    // if user is already at the first panel
+    // push router to prev manga folder if any
+
+    if (currentPanelIndex === 0) {
+      invoke("get_next_or_previous_manga_folder", {
+        currentFolderPath: currentManga?.full_path,
+        isNext: false,
+      }).then((nextFolder: unknown) => {
+        console.log("prev:", nextFolder);
+        if (nextFolder) {
+          invoke("set_global_manga", {
+            fullPath: (nextFolder as MangaFolderType).full_path,
+          }).then(() => {
+            setCurrentManga(nextFolder as ParentFolderType);
+          });
+        }
+      });
+    }
+
     if (mangaPanels.length > 0 && panelDirs.length > 0) {
       invoke("update_manga_panel", {
-				dirPaths: (JSON.stringify(panelDirs)),
+        dirPaths: JSON.stringify(panelDirs),
         isRead: false,
         zoomLevel: zoomLevel,
       });
@@ -224,7 +265,7 @@ export default function Manga() {
               handlePreviousPanel={handlePreviousPanel}
               handlePreviousSinglePanel={handlePreviousSinglePanel}
               handleSetLastPanel={handleSetLastPanel}
-							handleSetFirstPanel={handleSetFirstPanel}
+              handleSetFirstPanel={handleSetFirstPanel}
               largePanel={currentMangaPanel.width > 1500}
               currentPanelPath={mangaPanels[currentPanelIndex].path}
               zoomLevel={zoomLevel}
