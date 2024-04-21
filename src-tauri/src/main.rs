@@ -36,6 +36,7 @@ fn main() {
             global::set_global_manga,
             global::get_global_manga,
             stats::fetch_daily_manga_folders,
+            stats::create_manga_stats,
             stats::create_stats,
             misc::show_in_folder,
         ])
