@@ -20,7 +20,7 @@ export interface ParentFolderType {
 }
 
 export interface MangaFolderType extends ParentFolderType {
-	time_spent_reading: number;
+  time_spent_reading: number;
 }
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
@@ -96,7 +96,10 @@ export default function Dashboard() {
       isExpanded: false,
     }).then((result: unknown) => {
       if (result) {
-        setParentFolders((prev) => [...prev, ...result as ParentFolderType[]]);
+        setParentFolders((prev) => [
+          ...prev,
+          ...(result as ParentFolderType[]),
+        ]);
       }
     });
 
@@ -129,29 +132,35 @@ export default function Dashboard() {
             <PlusCircleIcon className="h-3 w-auto" />
           </span>
         </Button>
-        <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
-          {parentFolders.length > 0 &&
-            parentFolders.map((folder, index) => {
-              return (
+        <ul className="w-full h-full">
+            {parentFolders.length > 0 && (
+          <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
+							{parentFolders.map((folder, index) => {
+                return (
+                  <FolderContexMenu
+                    key={"parent" + index}
+                    folder={folder}
+                    setParentFolders={setParentFolders}
+                    setMangaFolders={setMangaFolders}
+                  />
+                );
+              })}
+          </ul>
+					)}
+          {mangaFolders.length > 0 && (
+            <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
+              {mangaFolders.map((folder, index) => (
                 <FolderContexMenu
-                  key={"parent" + index}
+                  key={"manga" + index}
                   folder={folder}
                   setParentFolders={setParentFolders}
-									setMangaFolders={setMangaFolders}
+                  setMangaFolders={setMangaFolders}
+                  handleMangaClick={handleMangaClick}
+                  isMangaFolder
                 />
-              );
-            })}
-          {mangaFolders.length > 0 &&
-            mangaFolders.map((folder, index) => (
-              <FolderContexMenu
-                key={"manga" + index}
-                folder={folder}
-                setParentFolders={setParentFolders}
-								setMangaFolders={setMangaFolders}
-                handleMangaClick={handleMangaClick}
-                isMangaFolder
-              />
-            ))}
+              ))}
+            </ul>
+          )}
         </ul>
       </div>
     </main>
