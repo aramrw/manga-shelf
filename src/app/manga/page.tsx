@@ -188,29 +188,29 @@ export default function Manga() {
 
     // if user is already at the last panel
     // push router to next manga folder if any
-
-    if (currentPanelIndex === mangaPanels.length - 1) {
-      invoke("get_next_or_previous_manga_folder", {
-        currentFolderPath: currentManga?.full_path,
-        isNext: true,
-      }).then((nextFolder: unknown) => {
-        console.log("nextFolder:", nextFolder);
-        if (nextFolder) {
-          invoke("set_global_manga", {
-            fullPath: (nextFolder as MangaFolderType).full_path,
-          }).then(() => {
-            setCurrentManga(nextFolder as ParentFolderType);
-          });
-        }
-      });
-    }
-
     if (mangaPanels.length > 0) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify(panelDirs),
         isRead: true,
         zoomLevel: zoomLevel,
       });
+
+      if (currentPanelIndex === mangaPanels.length - 1) {
+        invoke("get_next_or_previous_manga_folder", {
+          currentFolderPath: currentManga?.full_path,
+          isNext: true,
+        }).then((nextFolder: unknown) => {
+          console.log("nextFolder:", nextFolder);
+          if (nextFolder) {
+            invoke("set_global_manga", {
+              fullPath: (nextFolder as MangaFolderType).full_path,
+            }).then(() => {
+              setCurrentManga(nextFolder as ParentFolderType);
+            });
+          }
+        });
+      }
+
       setCurrentPanelIndex(mangaPanels.length - 1);
     }
   };
@@ -224,28 +224,29 @@ export default function Manga() {
     // if user is already at the first panel
     // push router to prev manga folder if any
 
-    if (currentPanelIndex === 0) {
-      invoke("get_next_or_previous_manga_folder", {
-        currentFolderPath: currentManga?.full_path,
-        isNext: false,
-      }).then((nextFolder: unknown) => {
-        console.log("prev:", nextFolder);
-        if (nextFolder) {
-          invoke("set_global_manga", {
-            fullPath: (nextFolder as MangaFolderType).full_path,
-          }).then(() => {
-            setCurrentManga(nextFolder as ParentFolderType);
-          });
-        }
-      });
-    }
-
     if (mangaPanels.length > 0 && panelDirs.length > 0) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify(panelDirs),
         isRead: false,
         zoomLevel: zoomLevel,
       });
+
+      if (currentPanelIndex === 0) {
+        invoke("get_next_or_previous_manga_folder", {
+          currentFolderPath: currentManga?.full_path,
+          isNext: false,
+        }).then((nextFolder: unknown) => {
+          console.log("prev:", nextFolder);
+          if (nextFolder) {
+            invoke("set_global_manga", {
+              fullPath: (nextFolder as MangaFolderType).full_path,
+            }).then(() => {
+              setCurrentManga(nextFolder as ParentFolderType);
+            });
+          }
+        });
+      }
+
       setCurrentPanelIndex(0);
     }
   };

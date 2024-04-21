@@ -127,7 +127,7 @@ fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) ->
     let file_types = ["jpg", "jpeg", "png", "webp"];
     let manga_dir = std::fs::read_dir(manga_folder_dir).unwrap();
     let mut total_panels: Vec<String> = Vec::new();
-    let mut total_panels_read: u32 = 0;
+    let mut total_panels_read: Vec<String> = Vec::new();
 
     for entry in manga_dir {
         let panel_path = entry.unwrap().path();
@@ -139,26 +139,27 @@ fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) ->
     }
 
     for panel in manga_panels {
-        if panel.is_read {
-            total_panels_read += 1;
+        if panel.is_read && total_panels.contains(&panel.full_path) {
+            //println!("Panel is read: {}", panel.full_path);
+            total_panels_read.push(panel.full_path.clone());
         }
     }
 
     //println!("Total panels: {}", total_panels.len());
 
-    if total_panels.is_empty() || total_panels_read == 0 {
+    if total_panels.is_empty() || total_panels_read.is_empty() {
         return (0, 0, 0);
     }
 
-    let total_panels_remaining = if total_panels.len() as u32 > total_panels_read {
-        total_panels.len() as u32 - total_panels_read
+    let total_panels_remaining = if total_panels.len() as u32 > total_panels_read.len() as u32 {
+        total_panels.len() as u32 - total_panels_read.len() as u32
     } else {
         0
     };
 
     (
         total_panels.len() as u32,
-        total_panels_read,
+        total_panels_read.len() as u32,
         total_panels_remaining,
     )
 }
