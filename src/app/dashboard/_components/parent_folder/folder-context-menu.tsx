@@ -42,7 +42,7 @@ export default function FolderContextMenu({
         <ContextMenuTrigger className="h-fit">
           {isMangaFolder && handleMangaClick ? (
             <ul
-              className="h-fit w-full p-1 bg-muted-foreground flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-sm hover:scale-[1.005] transition-transform duration-100 ease-in-out"
+              className="h-fit w-full p-1 bg-muted-foreground flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-sm hover:scale-[1.005] transition-transform duration-100 ease-in-out outline-none focus:ring-2 focus:ring-primary ring-opacity-50"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleMangaClick(folder.full_path);

@@ -124,7 +124,8 @@ export default function Dashboard() {
     <main className="w-full h-full">
       <div className="w-full h-full p-4 lg:px-16 xl:px-36 2xl:px-48">
         <Button
-          className="flex flex-row justify-center items-center gap-0.5 shadow-sm"
+          className="flex flex-row justify-center items-center gap-0.5 shadow-sm
+					"
           onClick={handleOpenExplorer}
         >
           <span className="text-center">Add Manga</span>
