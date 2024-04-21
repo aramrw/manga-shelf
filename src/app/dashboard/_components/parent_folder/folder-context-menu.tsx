@@ -38,7 +38,6 @@ export default function FolderContextMenu({
   };
 
   return (
-    <li>
       <ContextMenu>
         <ContextMenuTrigger className="h-fit">
           {isMangaFolder && handleMangaClick ? (
@@ -99,6 +98,5 @@ export default function FolderContextMenu({
           </ContextMenuSub>
         </ContextMenuContent>
       </ContextMenu>
-    </li>
   );
 }

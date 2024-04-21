@@ -132,7 +132,6 @@ export default function Dashboard() {
             <PlusCircleIcon className="h-3 w-auto" />
           </span>
         </Button>
-        <ul className="w-full h-full">
           {parentFolders.length > 0 && (
             <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
               {parentFolders.map((folder, index) => {
@@ -161,7 +160,6 @@ export default function Dashboard() {
               ))}
             </ul>
           )}
-        </ul>
       </div>
     </main>
   );
