@@ -22,6 +22,7 @@ pub struct MangaFolder {
     pub as_child: bool,
     pub is_expanded: bool,
     pub time_spent_reading: u32,
+    pub double_panels: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -168,6 +169,7 @@ pub async fn update_manga_folders(
             as_child,
             is_expanded,
             time_spent_reading: 0,
+            double_panels: false,
             created_at: "".to_string(),
             updated_at: "".to_string(),
         };
@@ -230,6 +232,7 @@ pub async fn get_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             as_child: row.get("as_child"),
             is_expanded: row.get("is_expanded"),
             time_spent_reading: row.get("time_spent_reading"),
+            double_panels: row.get("double_panels"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         };
@@ -439,6 +442,22 @@ pub async fn get_next_or_previous_manga_folder(
 }
 
 #[tauri::command]
+pub async fn update_folder_double_panels(
+    folder_path: String,
+    double_panels: bool,
+    handle: AppHandle,
+) {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    sqlx::query("UPDATE manga_folder SET double_panels = ? WHERE full_path = ?")
+        .bind(double_panels)
+        .bind(folder_path)
+        .execute(&pool)
+        .await
+        .unwrap();
+}
+
+#[tauri::command]
 pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> usize {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
@@ -457,6 +476,8 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
 
     last
 }
+
+
 
 #[tauri::command]
 pub async fn update_folder_time_spent_reading(
