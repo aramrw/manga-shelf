@@ -1,13 +1,12 @@
 "use client";
 
-import { MangaFolderType, ParentFolderType } from "../dashboard/page";
 import fetchGlobalManga from "./_components/lib/fetch-global-manga";
-import MangaHeader from "./_components/manga-header";
 import { useCallback, useEffect, useState } from "react";
-import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
+import { FileEntry, readDir } from "@tauri-apps/api/fs";
+import { MangaFolderType } from "../dashboard/page";
 import MangaPanel from "./_components/manga-panel";
-import { useRouter } from "next/navigation";
+import MangaHeader from "./_components/manga-header";
 
 export type MangaPanelType = {
   id: string;
@@ -22,7 +21,7 @@ export type MangaPanelType = {
 };
 
 export default function Manga() {
-  const [currentManga, setCurrentManga] = useState<ParentFolderType | null>(
+  const [currentManga, setCurrentManga] = useState<MangaFolderType | null>(
     null,
   );
   const [mangaPanels, setMangaPanels] = useState<FileEntry[]>([]);
@@ -30,11 +29,16 @@ export default function Manga() {
   const [currentMangaPanel, setCurrentMangaPanel] =
     useState<MangaPanelType | null>(null);
   const [zoomLevel, setZoomLevel] = useState(490);
+  const [isDoublePanels, setIsDoublePanels] = useState<boolean>(false);
 
   useEffect(() => {
     fetchGlobalManga().then((manga) => {
       if (manga) {
-        setCurrentManga(manga);
+        setCurrentManga(manga as MangaFolderType);
+				console.log("manga:", manga);
+				if (manga.double_panels) {
+					setIsDoublePanels(true);
+				}
       }
     });
   }, []);
@@ -79,7 +83,11 @@ export default function Manga() {
   }, [currentManga]);
 
   const invokeGetCurrentPanel = useCallback(() => {
-    if (currentManga && mangaPanels.length > 0 && mangaPanels[currentPanelIndex] ) {
+    if (
+      currentManga &&
+      mangaPanels.length > 0 &&
+      mangaPanels[currentPanelIndex]
+    ) {
       invoke("get_manga_panel", {
         path: mangaPanels[currentPanelIndex].path,
       }).then((panel: unknown) => {
@@ -203,7 +211,7 @@ export default function Manga() {
             invoke("set_global_manga", {
               fullPath: (nextFolder as MangaFolderType).full_path,
             }).then(() => {
-              setCurrentManga(nextFolder as ParentFolderType);
+              setCurrentManga(nextFolder as MangaFolderType);
             });
           }
         });
@@ -239,7 +247,7 @@ export default function Manga() {
             invoke("set_global_manga", {
               fullPath: (nextFolder as MangaFolderType).full_path,
             }).then(() => {
-              setCurrentManga(nextFolder as ParentFolderType);
+              setCurrentManga(nextFolder as MangaFolderType);
             });
           }
         });
@@ -259,30 +267,30 @@ export default function Manga() {
             <MangaHeader
               key={`${currentManga.title}-manga-header`}
               currentManga={currentManga}
+              setIsDoublePanels={setIsDoublePanels}
               handleNextPanel={handleNextPanel}
               handleNextSinglePanel={handleNextSinglePanel}
               handlePreviousPanel={handlePreviousPanel}
               handlePreviousSinglePanel={handlePreviousSinglePanel}
               handleSetLastPanel={handleSetLastPanel}
               handleSetFirstPanel={handleSetFirstPanel}
-              largePanel={currentMangaPanel.width > 1700}
+              doublePanels={isDoublePanels}
               currentPanelPath={mangaPanels[currentPanelIndex].path}
               zoomLevel={zoomLevel}
               setZoomLevel={setZoomLevel}
             />
             <div className="flex flex-row justify-center items-center">
               <>
-                {currentMangaPanel.width < 1700 &&
-                  mangaPanels[currentPanelIndex + 1] && (
-                    <MangaPanel
-                      key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
-                      currentPanel={mangaPanels[currentPanelIndex + 1]}
-                      secondPanel={true}
-                      zoomLevel={zoomLevel}
-                      width={currentMangaPanel.width}
-                      height={currentMangaPanel.height}
-                    />
-                  )}
+                {isDoublePanels && mangaPanels[currentPanelIndex + 1] && (
+                  <MangaPanel
+                    key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
+                    currentPanel={mangaPanels[currentPanelIndex + 1]}
+                    secondPanel={true}
+                    zoomLevel={zoomLevel}
+                    width={currentMangaPanel.width}
+                    height={currentMangaPanel.height}
+                  />
+                )}
 
                 <MangaPanel
                   key={`${mangaPanels[currentPanelIndex].path}-manga-panel-current`}
