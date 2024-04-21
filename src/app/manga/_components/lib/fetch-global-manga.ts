@@ -1,11 +1,11 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import { ParentFolderType } from "@/app/dashboard/page";
+import { MangaFolderType, ParentFolderType } from "@/app/dashboard/page";
 
-export default async function fetchGlobalManga(): Promise<ParentFolderType | null> {
+export default async function fetchGlobalManga(): Promise<MangaFolderType | null> {
 	const result = await invoke("get_global_manga");
 	
 	if (result) {
-		const mangaFolder: ParentFolderType = result as ParentFolderType; 
+		const mangaFolder: MangaFolderType = result as MangaFolderType; 
 		return mangaFolder;
 	} 
 
