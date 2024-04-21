@@ -64,7 +64,7 @@ export default function Manga() {
     });
   }, []);
 
-  const invokeFindLastReadPanel =  useCallback(() => {
+  const invokeFindLastReadPanel = useCallback(() => {
     if (currentManga) {
       invoke("find_last_read_panel", {
         chapterPath: currentManga.full_path,
@@ -75,7 +75,7 @@ export default function Manga() {
     }
   }, [currentManga]);
 
-  const invokeGetCurrentPanel =  useCallback(() => {
+  const invokeGetCurrentPanel = useCallback(() => {
     if (currentManga) {
       invoke("get_manga_panel", {
         path: mangaPanels[currentPanelIndex].path,
@@ -111,8 +111,8 @@ export default function Manga() {
   }, [currentManga, invokeFindLastReadPanel]);
 
   useEffect(() => {
-				console.log("currentPanelIndex:", currentMangaPanel);
-		}, [currentMangaPanel]);
+    console.log("currentPanelIndex:", currentMangaPanel);
+  }, [currentMangaPanel]);
 
   // previous panels
   const handlePreviousPanel = () => {
@@ -179,6 +179,36 @@ export default function Manga() {
     }
   };
 
+  const handleSetLastPanel = () => {
+		const panelDirs: string[] = [];
+		for (const panel of mangaPanels) {
+			panelDirs.push(panel.path);
+		}
+    if (mangaPanels.length > 0) {
+      invoke("update_manga_panel", {
+        dirPaths: (JSON.stringify(panelDirs)),
+        isRead: true,
+        zoomLevel: zoomLevel,
+      });
+      setCurrentPanelIndex(mangaPanels.length - 1);
+    }
+  };
+
+  const handleSetFirstPanel = () => {
+		const panelDirs: string[] = [];
+		for (const panel of mangaPanels) {
+			panelDirs.push(panel.path);
+		}
+    if (mangaPanels.length > 0 && panelDirs.length > 0) {
+      invoke("update_manga_panel", {
+				dirPaths: (JSON.stringify(panelDirs)),
+        isRead: false,
+        zoomLevel: zoomLevel,
+      });
+      setCurrentPanelIndex(0);
+    }
+  };
+
   return (
     <main className="w-full h-full flex flex-col justify-center items-center">
       {currentManga &&
@@ -193,6 +223,8 @@ export default function Manga() {
               handleNextSinglePanel={handleNextSinglePanel}
               handlePreviousPanel={handlePreviousPanel}
               handlePreviousSinglePanel={handlePreviousSinglePanel}
+              handleSetLastPanel={handleSetLastPanel}
+							handleSetFirstPanel={handleSetFirstPanel}
               largePanel={currentMangaPanel.width > 1500}
               currentPanelPath={mangaPanels[currentPanelIndex].path}
               zoomLevel={zoomLevel}
@@ -200,16 +232,17 @@ export default function Manga() {
             />
             <div className="flex flex-row justify-center items-center">
               <>
-                {currentMangaPanel.width < 1500 && mangaPanels[currentPanelIndex + 1] && (
-                  <MangaPanel
-                    key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
-                    currentPanel={mangaPanels[currentPanelIndex + 1]}
-                    secondPanel={true}
-                    zoomLevel={zoomLevel}
-                    width={currentMangaPanel.width}
-                    height={currentMangaPanel.height}
-                  />
-                )}
+                {currentMangaPanel.width < 1500 &&
+                  mangaPanels[currentPanelIndex + 1] && (
+                    <MangaPanel
+                      key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
+                      currentPanel={mangaPanels[currentPanelIndex + 1]}
+                      secondPanel={true}
+                      zoomLevel={zoomLevel}
+                      width={currentMangaPanel.width}
+                      height={currentMangaPanel.height}
+                    />
+                  )}
 
                 <MangaPanel
                   key={`${mangaPanels[currentPanelIndex].path}-manga-panel-current`}

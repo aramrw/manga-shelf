@@ -3,11 +3,14 @@
 import { ParentFolderType } from "@/app/dashboard/page";
 import { Button } from "@/components/ui/button";
 import {
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon,
 } from "@heroicons/react/16/solid";
 import { invoke } from "@tauri-apps/api/tauri";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect } from "react";
 
 const MangaHeader = ({
@@ -20,6 +23,8 @@ const MangaHeader = ({
   handleNextSinglePanel,
   handlePreviousPanel,
   handlePreviousSinglePanel,
+  handleSetLastPanel,
+  handleSetFirstPanel,
 }: {
   currentManga: ParentFolderType;
   largePanel: boolean;
@@ -30,6 +35,8 @@ const MangaHeader = ({
   handleNextSinglePanel: () => void;
   handlePreviousPanel: () => void;
   handlePreviousSinglePanel: () => void;
+  handleSetLastPanel: () => void;
+  handleSetFirstPanel: () => void;
 }) => {
   const handleMagnify = useCallback(() => {
     setZoomLevel((prev) => prev + 10);
@@ -51,24 +58,24 @@ const MangaHeader = ({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // previous panel
-      if (event.shiftKey && event.key === "ArrowRight") {
+
+      // set first and last panel
+      if (event.ctrlKey && event.key === "ArrowRight") {
+        handleSetFirstPanel();
+      } else if (event.ctrlKey && event.key === "ArrowLeft") {
+        handleSetLastPanel();
+      } // previous panels
+			else if (event.shiftKey && event.key === "ArrowRight") {
         handlePreviousSinglePanel();
-      } else if (event.altKey && event.key === "ArrowRight") {
-        // handleNextPanel();
       } else if (event.key === "ArrowRight") {
         if (largePanel) {
           handlePreviousSinglePanel();
         } else {
           handlePreviousPanel();
         }
-      }
-
-      // next panel
-      if (event.shiftKey && event.key === "ArrowLeft") {
+      } // next panels
+			else if (event.shiftKey && event.key === "ArrowLeft") {
         handleNextSinglePanel();
-      } else if (event.altKey && event.key === "ArrowLeft") {
-        // handleNextPanel();
       } else if (event.key === "ArrowLeft") {
         if (largePanel) {
           handleNextSinglePanel();
@@ -77,6 +84,7 @@ const MangaHeader = ({
         }
       }
 
+      // handle zoom level
       if (event.ctrlKey && event.key === "=") {
         handleMagnify();
       } else if (event.ctrlKey && event.key === "-") {
@@ -119,8 +127,13 @@ const MangaHeader = ({
         </ul>
         <ul className="w-full h-full flex flex-row justify-center items-center gap-2">
           <li className="flex flex-row justify-center items-center">
+            <Button className="p-0 shadow-lg" onClick={handleSetLastPanel}>
+              <ChevronDoubleLeftIcon className="h-5" />
+            </Button>
+          </li>
+          <li className="flex flex-row justify-center items-center">
             <Button className="p-0 shadow-lg" onClick={handleNextPanel}>
-              <ChevronLeft size={20} />
+              <ChevronLeftIcon className="h-5" />
             </Button>
           </li>
           <li className="flex flex-row justify-center items-center select-none">
@@ -128,7 +141,12 @@ const MangaHeader = ({
           </li>
           <li className="flex flex-row justify-center items-center">
             <Button className="p-0 shadow-lg" onClick={handlePreviousPanel}>
-              <ChevronRight size={20} />
+              <ChevronRightIcon className="h-5" />
+            </Button>
+          </li>
+          <li className="flex flex-row justify-center items-center">
+            <Button className="p-0 shadow-lg" onClick={handleSetFirstPanel}>
+              <ChevronDoubleRightIcon className="h-5" />
             </Button>
           </li>
         </ul>
