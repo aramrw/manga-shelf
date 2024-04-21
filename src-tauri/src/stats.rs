@@ -1,10 +1,10 @@
+use crate::manga::{MangaFolder, MangaPanel};
 use chrono::format::ParseError;
 use chrono::{DateTime, Local, NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
-use crate::manga::{MangaFolder, MangaPanel};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Stats {
@@ -41,7 +41,6 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             updated_at: row.get("updated_at"),
         };
 
-
         // Parse the strings into NaiveDateTime
         let created_at: Result<NaiveDateTime, ParseError> =
             NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S");
@@ -64,7 +63,9 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
                 let updated_at_date = updated_at_local.date_naive();
                 let today = Local::now();
 
-                if created_at_date == today.date_naive() || updated_at_date == today.date_naive() && current_manga.as_child {
+                if created_at_date == today.date_naive()
+                    || updated_at_date == today.date_naive() && current_manga.as_child
+                {
                     daily_manga.push(current_manga);
                 }
             }
@@ -78,7 +79,6 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
 
 #[tauri::command]
 pub async fn create_stats(handle: AppHandle) -> Stats {
-
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     // fetch all manga folders
@@ -101,7 +101,8 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
 
     // count total panels, total panels read, total panels remaining
     for folder in &manga_folders {
-        let (total, total_read, total_remaining) = count_manga_panels(&folder.full_path, &manga_panels);
+        let (total, total_read, total_remaining) =
+            count_manga_panels(&folder.full_path, &manga_panels);
 
         total_panels += total;
         total_panels_read += total_read;
@@ -113,7 +114,6 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         total_time_spent_reading += folder.time_spent_reading;
     }
 
-
     Stats {
         total_manga,
         total_panels,
@@ -121,16 +121,13 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         total_panels_remaining,
         total_time_spent_reading,
     }
-
 }
 
 fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) -> (u32, u32, u32) {
-
     let file_types = ["jpg", "jpeg", "png", "webp"];
     let manga_dir = std::fs::read_dir(manga_folder_dir).unwrap();
     let mut total_panels: Vec<String> = Vec::new();
     let mut total_panels_read: u32 = 0;
-
 
     for entry in manga_dir {
         let panel_path = entry.unwrap().path();
@@ -144,13 +141,24 @@ fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) ->
     for panel in manga_panels {
         if panel.is_read {
             total_panels_read += 1;
-        } 
+        }
     }
 
     //println!("Total panels: {}", total_panels.len());
 
-    let total_panels_remaining = total_panels.len() as u32 - total_panels_read;
+    if total_panels.is_empty() || total_panels_read == 0 {
+        return (0, 0, 0);
+    }
 
-    (total_panels.len() as u32, total_panels_read, total_panels_remaining)
+    let total_panels_remaining = if total_panels.len() as u32 > total_panels_read {
+        total_panels.len() as u32 - total_panels_read
+    } else {
+        0
+    };
 
+    (
+        total_panels.len() as u32,
+        total_panels_read,
+        total_panels_remaining,
+    )
 }
