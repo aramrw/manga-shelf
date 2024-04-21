@@ -32,7 +32,7 @@ export default function DailyTab() {
       </CardHeader>
       <CardContent className="space-y-1">
         <h1 className="text-sm font-bold">Updated Today</h1>
-        <div className="py-1 max-h-56 overflow-auto max-w-52 pr-2 rounded-md flex flex-col justify-self-auto items-start gap-2 shadow-md outline outline-secondary">
+        <div className="py-1 max-h-56 overflow-auto max-w-52 rounded-md flex flex-col justify-self-auto items-start gap-2 shadow-md outline outline-secondary">
           {dailyMangaFolders.map((manga, index) => (
             <MangaCard key={index} mangaFolder={manga} />
           ))}
