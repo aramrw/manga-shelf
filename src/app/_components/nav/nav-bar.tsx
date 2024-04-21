@@ -37,7 +37,7 @@ export default function NavBar() {
 
       setWasPreviousPathManga(false);
     }
-  }, [pathname]);
+  }, [pathname, router, startTime, wasPreviousPathManga]);
 
   const handleGoBack = () => {
     if (pathname === "/dashboard") {

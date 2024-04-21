@@ -1,6 +1,6 @@
 "use client";
 
-import { ParentFolderType } from "@/app/dashboard/page";
+import { MangaFolderType, ParentFolderType } from "@/app/dashboard/page";
 import {
   Card,
   CardContent,
@@ -14,11 +14,11 @@ import { useEffect, useState } from "react";
 import MangaCard from "../../manga-card";
 
 export default function DailyTab() {
-  const [dailyMangaFolders, setDailyMangaFolders] = useState<ParentFolderType[]>([]);
+  const [dailyMangaFolders, setDailyMangaFolders] = useState<MangaFolderType[]>([]);
 
   useEffect(() => {
     invoke("fetch_daily_manga_folders").then((daily) => {
-      setDailyMangaFolders(daily as ParentFolderType[]);
+      setDailyMangaFolders(daily as MangaFolderType[]);
     });
   }, []);
 

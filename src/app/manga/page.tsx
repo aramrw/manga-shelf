@@ -3,7 +3,7 @@
 import { ParentFolderType } from "../dashboard/page";
 import fetchGlobalManga from "./_components/lib/fetch-global-manga";
 import MangaHeader from "./_components/manga-header";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { invoke } from "@tauri-apps/api/tauri";
 import MangaPanel from "./_components/manga-panel";
@@ -64,6 +64,31 @@ export default function Manga() {
     });
   }, []);
 
+  const invokeFindLastReadPanel =  useCallback(() => {
+    if (currentManga) {
+      invoke("find_last_read_panel", {
+        chapterPath: currentManga.full_path,
+      }).then((lastReadPanelIndex: unknown) => {
+        console.log("previous:", lastReadPanelIndex);
+        setCurrentPanelIndex(lastReadPanelIndex as number);
+      });
+    }
+  }, [currentManga]);
+
+  const invokeGetCurrentPanel =  useCallback(() => {
+    if (currentManga) {
+      invoke("get_manga_panel", {
+        path: mangaPanels[currentPanelIndex].path,
+      }).then((panel: unknown) => {
+        let knownPanel = panel as MangaPanelType;
+        setCurrentMangaPanel(knownPanel);
+        if (knownPanel.zoom_level > 0) {
+          setZoomLevel(knownPanel.zoom_level);
+        }
+      });
+    }
+  }, [currentManga, currentPanelIndex, mangaPanels]);
+
   useEffect(() => {
     if (
       currentPanelIndex > -1 &&
@@ -79,38 +104,15 @@ export default function Manga() {
         clearTimeout(remove);
       };
     }
-  }, [mangaPanels, currentPanelIndex]);
+  }, [mangaPanels, currentPanelIndex, invokeGetCurrentPanel]);
 
   useEffect(() => {
     if (currentManga) invokeFindLastReadPanel();
-  }, [currentManga]);
+  }, [currentManga, invokeFindLastReadPanel]);
 
-  useEffect(() => { }, [currentPanelIndex]);
-
-  const invokeFindLastReadPanel = async () => {
-    if (currentManga) {
-      invoke("find_last_read_panel", {
-        chapterPath: currentManga.full_path,
-      }).then((lastReadPanelIndex: unknown) => {
-        console.log("previous:", lastReadPanelIndex);
-        setCurrentPanelIndex(lastReadPanelIndex as number);
-      });
-    }
-  };
-
-  const invokeGetCurrentPanel = async () => {
-    if (currentManga) {
-      invoke("get_manga_panel", {
-        path: mangaPanels[currentPanelIndex].path,
-      }).then((panel: unknown) => {
-        let knownPanel = panel as MangaPanelType;
-        setCurrentMangaPanel(knownPanel);
-        if (knownPanel.zoom_level > 0) {
-          setZoomLevel(knownPanel.zoom_level);
-        }
-      });
-    }
-  };
+  useEffect(() => {
+				console.log("currentPanelIndex:", currentMangaPanel);
+		}, [currentMangaPanel]);
 
   // previous panels
   const handlePreviousPanel = () => {
@@ -153,7 +155,7 @@ export default function Manga() {
 
   // next panels
   const handleNextPanel = () => {
-    if (currentPanelIndex < mangaPanels.length - 3) {
+    if (currentPanelIndex + 2 <= mangaPanels.length - 1) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([
           mangaPanels[currentPanelIndex + 1].path,
@@ -167,7 +169,7 @@ export default function Manga() {
   };
 
   const handleNextSinglePanel = () => {
-    if (currentPanelIndex < mangaPanels.length - 3) {
+    if (currentPanelIndex + 1 <= mangaPanels.length - 1) {
       invoke("update_manga_panel", {
         dirPaths: JSON.stringify([mangaPanels[currentPanelIndex + 1].path]),
         isRead: true,
@@ -181,8 +183,8 @@ export default function Manga() {
     <main className="w-full h-full flex flex-col justify-center items-center">
       {currentManga &&
         currentMangaPanel &&
-        currentPanelIndex < mangaPanels.length - 1 &&
-        currentPanelIndex > -1 && (
+        currentPanelIndex <= mangaPanels.length - 1 &&
+        currentPanelIndex >= -1 && (
           <>
             <MangaHeader
               key={`${currentManga.title}-manga-header`}
@@ -198,7 +200,7 @@ export default function Manga() {
             />
             <div className="flex flex-row justify-center items-center">
               <>
-                {currentMangaPanel.width < 1500 && (
+                {currentMangaPanel.width < 1500 && mangaPanels[currentPanelIndex + 1] && (
                   <MangaPanel
                     key={`${mangaPanels[currentPanelIndex].path}-manga-panel-next`}
                     currentPanel={mangaPanels[currentPanelIndex + 1]}

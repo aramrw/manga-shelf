@@ -341,7 +341,7 @@ pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel
 }
 
 #[tauri::command]
-pub async fn delete_folder(id: String, path: String, all_data: bool, handle: AppHandle) {
+pub async fn delete_folder(_id: String, path: String, all_data: bool, handle: AppHandle) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     //println!("Deleting folder: {}", path);

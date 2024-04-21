@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { invoke } from "@tauri-apps/api/tauri";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 const MangaHeader = ({
   currentManga,
@@ -31,43 +31,68 @@ const MangaHeader = ({
   handlePreviousPanel: () => void;
   handlePreviousSinglePanel: () => void;
 }) => {
+  const handleMagnify = useCallback(() => {
+    setZoomLevel((prev) => prev + 10);
+    invoke("update_manga_panel", {
+      dirPaths: JSON.stringify([currentPanelPath]),
+      isRead: true,
+      zoomLevel: zoomLevel + 10,
+    });
+  }, [currentPanelPath, zoomLevel, setZoomLevel]);
 
-  function handleKeyDown(event: KeyboardEvent) {
-    // previous panel
-    if (event.shiftKey && event.key === "ArrowRight") {
-      handlePreviousSinglePanel();
-    } else if (event.altKey && event.key === "ArrowRight") {
-      // handleNextPanel();
-    } else if (event.key === "ArrowRight") {
-      if (largePanel) {
+  const handleMinify = useCallback(() => {
+    setZoomLevel((prev) => prev - 10);
+    invoke("update_manga_panel", {
+      dirPaths: JSON.stringify([currentPanelPath]),
+      isRead: true,
+      zoomLevel: zoomLevel - 10,
+    });
+  }, [currentPanelPath, zoomLevel, setZoomLevel]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      // previous panel
+      if (event.shiftKey && event.key === "ArrowRight") {
         handlePreviousSinglePanel();
-      } else {
-        handlePreviousPanel();
+      } else if (event.altKey && event.key === "ArrowRight") {
+        // handleNextPanel();
+      } else if (event.key === "ArrowRight") {
+        if (largePanel) {
+          handlePreviousSinglePanel();
+        } else {
+          handlePreviousPanel();
+        }
       }
-    }
 
-    // next panel
-    if (event.shiftKey && event.key === "ArrowLeft") {
-      handleNextSinglePanel();
-    } else if (event.altKey && event.key === "ArrowLeft") {
-      // handleNextPanel();
-    } else if (event.key === "ArrowLeft") {
-      if (largePanel) {
+      // next panel
+      if (event.shiftKey && event.key === "ArrowLeft") {
         handleNextSinglePanel();
-      } else {
-        handleNextPanel();
+      } else if (event.altKey && event.key === "ArrowLeft") {
+        // handleNextPanel();
+      } else if (event.key === "ArrowLeft") {
+        if (largePanel) {
+          handleNextSinglePanel();
+        } else {
+          handleNextPanel();
+        }
       }
-    }
 
-
-		if (event.ctrlKey && event.key === "=") {
-			handleMagnify();
-		} else if (event.ctrlKey && event.key === "-") {
-			handleMinify();
-		}
-
-  }
-
+      if (event.ctrlKey && event.key === "=") {
+        handleMagnify();
+      } else if (event.ctrlKey && event.key === "-") {
+        handleMinify();
+      }
+    },
+    [
+      handleNextPanel,
+      handlePreviousPanel,
+      handleNextSinglePanel,
+      handlePreviousSinglePanel,
+      handleMagnify,
+      handleMinify,
+      largePanel,
+    ],
+  );
 
   useEffect(() => {
     addEventListener("keydown", handleKeyDown);
@@ -75,25 +100,7 @@ const MangaHeader = ({
     return () => {
       removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleNextPanel, handlePreviousPanel]);
-
-  const handleMagnify = () => {
-    setZoomLevel((prev) => prev + 10);
-    invoke("update_manga_panel", {
-      dirPaths: JSON.stringify([currentPanelPath]),
-      isRead: true,
-      zoomLevel: zoomLevel + 10,
-    });
-  };
-
-  const handleMinify = () => {
-    setZoomLevel((prev) => prev - 10);
-    invoke("update_manga_panel", {
-      dirPaths: JSON.stringify([currentPanelPath]),
-      isRead: true,
-      zoomLevel: zoomLevel - 10,
-    });
-  };
+  }, [handleNextPanel, handlePreviousPanel, handleKeyDown]);
 
   return (
     <header className="w-full h-fit bg-secondary p-1.5 rounded-b-sm flex justify-center items-center border-b-2 border-accent shadow-sm">

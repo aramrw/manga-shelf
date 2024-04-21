@@ -2,7 +2,7 @@
 import { FileEntry, readDir } from "@tauri-apps/api/fs";
 import { MangaFolderType, ParentFolderType } from "../../page";
 import { invoke } from "@tauri-apps/api/tauri";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
@@ -27,66 +27,72 @@ export default function ParentFolder({
   );
   const router = useRouter();
 
-  useEffect(() => {
-    readDirSort(parentFolder.full_path);
-  }, []);
-
-  function readDirSort(dir: string) {
-    const parentFolderPaths: string[] = [];
-    const mangaFolderPaths: string[] = [];
-
-    readDir(dir, { recursive: true })
-      .then((dirEntries: FileEntry[]) => {
-        for (const entry of dirEntries) {
-          if (
-            entry.children &&
-            entry.children[0] &&
-            entry.children[0].name &&
-            fileTypes.some(
-              (fileType) =>
-                entry.children &&
-                entry.children[0].name &&
-                entry.children[0].name.includes(fileType),
-            )
-          ) {
-            mangaFolderPaths.push(entry.path);
-          } else {
-            parentFolderPaths.push(entry.path);
-          }
-        }
-      })
-      .then(() => {
-        if (parentFolderPaths.length > 0 || mangaFolderPaths.length > 0) {
-          invokeAddFolders(parentFolderPaths, mangaFolderPaths);
+  const invokeAddFolders = useCallback(
+    (parentDirs: string[], mangaDirs: string[]) => {
+      invoke("update_parent_folders", {
+        dirPaths: JSON.stringify(parentDirs),
+        asChild: true,
+        isExpanded: false,
+      }).then((result: unknown) => {
+        if (result) {
+          const currentParentFolders: ParentFolderType[] =
+            result as ParentFolderType[];
+          setParentFolders(currentParentFolders);
         }
       });
-  }
 
-  const invokeAddFolders = (parentDirs: string[], mangaDirs: string[]) => {
-    invoke("update_parent_folders", {
-      dirPaths: JSON.stringify(parentDirs),
-      asChild: true,
-      isExpanded: false,
-    }).then((result: unknown) => {
-      if (result) {
-        const currentParentFolders: ParentFolderType[] =
-          result as ParentFolderType[];
-        setParentFolders(currentParentFolders);
-      }
-    });
+      invoke("update_manga_folders", {
+        dirPaths: JSON.stringify(mangaDirs),
+        asChild: true,
+        isExpanded: false,
+      }).then((result: unknown) => {
+        if (result) {
+          const currentMangaFolders: MangaFolderType[] =
+            result as MangaFolderType[];
+          setMangaFolders(currentMangaFolders);
+        }
+      });
+    },
+    [],
+  );
 
-    invoke("update_manga_folders", {
-      dirPaths: JSON.stringify(mangaDirs),
-      asChild: true,
-      isExpanded: false,
-    }).then((result: unknown) => {
-      if (result) {
-        const currentMangaFolders: MangaFolderType[] =
-          result as MangaFolderType[];
-        setMangaFolders(currentMangaFolders);
-      }
-    });
-  };
+  const readDirSort = useCallback(
+    (dir: string) => {
+      const parentFolderPaths: string[] = [];
+      const mangaFolderPaths: string[] = [];
+
+      readDir(dir, { recursive: true })
+        .then((dirEntries: FileEntry[]) => {
+          for (const entry of dirEntries) {
+            if (
+              entry.children &&
+              entry.children[0] &&
+              entry.children[0].name &&
+              fileTypes.some(
+                (fileType) =>
+                  entry.children &&
+                  entry.children[0].name &&
+                  entry.children[0].name.includes(fileType),
+              )
+            ) {
+              mangaFolderPaths.push(entry.path);
+            } else {
+              parentFolderPaths.push(entry.path);
+            }
+          }
+        })
+        .then(() => {
+          if (parentFolderPaths.length > 0 || mangaFolderPaths.length > 0) {
+            invokeAddFolders(parentFolderPaths, mangaFolderPaths);
+          }
+        });
+    },
+    [invokeAddFolders],
+  );
+
+  useEffect(() => {
+    readDirSort(parentFolder.full_path);
+  }, [parentFolder.full_path, readDirSort]);
 
   const handleMangaClick = (mangaFolderPath: string) => {
     invoke("set_global_manga", { fullPath: mangaFolderPath }).then(() => {
@@ -161,23 +167,21 @@ export default function ParentFolder({
               ))}
             </li>
           )}
-          <li
-            className="w-full h-fit flex flex-col justify-center items-center bg-secondary"
-          >
+          <li className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
             {mangaFolders.map((mangaFolder, index) => (
               <HoverCard key={`${mangaFolder.full_path}-${index}`}>
                 <HoverCardTrigger className="w-full h-full">
                   <h1
-										tabIndex={0}
+                    tabIndex={0}
                     className={cn(
                       "z-50 bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full focus:outline-none focus:ring-2 focus:ring-muted-foreground focus:ring-opacity-50 ring-inset",
                     )}
                     onClick={() => handleMangaClick(mangaFolder.full_path)}
-										onKeyDown={(e) => {
-											if (e.key === "Enter") {
-												handleMangaClick(mangaFolder.full_path);
-											}
-										}}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleMangaClick(mangaFolder.full_path);
+                      }
+                    }}
                   >
                     {mangaFolder.title}
                   </h1>
