@@ -21,6 +21,7 @@ export interface ParentFolderType {
 
 export interface MangaFolderType extends ParentFolderType {
   time_spent_reading: number;
+	double_panels: boolean;
 }
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
