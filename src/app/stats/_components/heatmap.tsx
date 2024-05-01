@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import HeatMap from "@uiw/react-heat-map";
-import Tooltip from '@uiw/react-tooltip';
+import Tooltip from "@uiw/react-tooltip";
 import { invoke } from "@tauri-apps/api/tauri";
 
 interface DateCount {
@@ -20,11 +20,11 @@ const Heatmap = () => {
   }, []);
 
   return (
-    <div className="w-fit h-fit">
+    <div className="w-fit h-fit outline outline-secondary rounded-md">
       <HeatMap
-				className="font-semibold"
+        className="font-semibold"
         value={panelDates}
-				style={{ color: "#374253" }}
+        style={{ color: "#374253" }}
         weekLabels={["S", "M", "T", "W", "T", "F", "S"]}
         startDate={new Date("2024/01/01")}
         endDate={new Date()}
@@ -39,11 +39,16 @@ const Heatmap = () => {
         rectRender={(props, data) => {
           // if (!data.count) return <rect {...props} />;
           return (
-            <Tooltip placement="top" content={`${data.count || 0}`} className="text-xs">
+            <Tooltip
+              placement="top"
+              content={`${data.count || 0}`}
+              className="text-xs"
+            >
               <rect {...props} />
             </Tooltip>
           );
-        }} />
+        }}
+      />
     </div>
   );
 };
