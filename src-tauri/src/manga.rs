@@ -375,7 +375,7 @@ pub async fn delete_folder(_id: String, path: String, all_data: bool, handle: Ap
 }
 
 // helper functions
-fn split_path_parts(path: &str) -> PathParts {
+pub fn split_path_parts(path: &str) -> PathParts {
     let path = std::path::Path::new(path);
 
     let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
@@ -392,7 +392,7 @@ fn split_path_parts(path: &str) -> PathParts {
     }
 }
 
-fn get_panel_image_dimensions(panel_image_path: &str) -> (u16, u16) {
+pub fn get_panel_image_dimensions(panel_image_path: &str) -> (u16, u16) {
     match imagesize::size(panel_image_path) {
         Ok(size) => (size.width as u16, size.height as u16),
         Err(_) => (0, 0),
