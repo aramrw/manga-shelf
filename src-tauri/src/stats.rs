@@ -1,4 +1,4 @@
-use crate::manga::{MangaFolder, MangaPanel};
+use crate::manga::{get_panel_image_dimensions, split_path_parts, MangaFolder, MangaPanel};
 use chrono::{Local, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
@@ -69,16 +69,81 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
     daily_manga
 }
 
+async fn read_manga_folder_dirs(folder_path: &String, pool: SqlitePool) {
+    let image_formats = [
+        "jpg", "jpeg", "png", "gif", "bmp", "ico", "tif", "tiff", "webp", "svg", "pdf",
+    ];
+
+    let parent = std::fs::read_dir(folder_path).unwrap();
+
+    for file in parent {
+        let entry = file.unwrap();
+        let file_name = entry.file_name();
+        let file_path = entry.path();
+
+        if file_path.is_dir() {
+            let path_str = file_path.to_str().unwrap().to_string();
+            Box::pin(read_manga_folder_dirs(&path_str, pool.clone())).await;
+        } else {
+            for format in &image_formats {
+                if file_name.to_str().unwrap().to_lowercase().contains(format) {
+                    let path_str = file_path.to_str().unwrap();
+                    insert_or_ignore_panel(path_str, pool.clone()).await;
+                }
+            }
+        }
+    }
+}
+
+async fn insert_or_ignore_panel(path: &str, pool: SqlitePool) {
+    let uuid = uuid::Uuid::new_v4().to_string();
+    // gets the parent, file name, and extension of the path
+    let split_path = split_path_parts(path);
+    // get the width and height of the panel image
+    let (width, height) = get_panel_image_dimensions(path);
+
+    sqlx::query(
+        "INSERT OR IGNORE INTO manga_panel (
+    id, 
+    title, 
+    full_path, 
+    is_read, 
+    width, 
+    height, 
+    zoom_level, 
+    created_at,
+    updated_at
+    )
+    VALUES (
+    ?, ?, ?, ?, ?, ?, ?, 
+    datetime('now', 'localtime'),
+    datetime('now', 'localtime')
+    )
+    ",
+    )
+    .bind(uuid)
+    .bind(split_path.file_name)
+    .bind(path)
+    .bind(false)
+    .bind(width)
+    .bind(height)
+    .bind(0)
+    .execute(&pool)
+    .await
+    .unwrap();
+}
+
 #[tauri::command]
 pub async fn create_manga_stats(handle: AppHandle, folder_path: String) -> MangaStats {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     // fetch all manga panels
-    let manga_panels: Vec<MangaPanel> = sqlx::query_as("SELECT * FROM manga_panel WHERE full_path LIKE ? || '%'")
-        .bind(&folder_path)
-        .fetch_all(&pool)
-        .await
-        .unwrap();
+    let manga_panels: Vec<MangaPanel> =
+        sqlx::query_as("SELECT * FROM manga_panel WHERE full_path LIKE ? || '%'")
+            .bind(&folder_path)
+            .fetch_all(&pool)
+            .await
+            .unwrap();
 
     //println!("Folder path: {}", manga_panels.len());
 
@@ -90,7 +155,6 @@ pub async fn create_manga_stats(handle: AppHandle, folder_path: String) -> Manga
         total_panels_remaining: total_remaining,
     }
 }
-    
 
 #[tauri::command]
 pub async fn create_stats(handle: AppHandle) -> Stats {
@@ -102,32 +166,23 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         .await
         .unwrap();
 
+    let total_manga = manga_folders.len() as u32;
+    let mut total_time_spent_reading: u32 = 0;
+
+    // count total panels, total panels read, total panels remaining
+    for folder in &manga_folders {
+        read_manga_folder_dirs(&folder.full_path, pool.clone()).await;
+        total_time_spent_reading += folder.time_spent_reading;
+    }
+
     // fetch all manga panels
     let manga_panels: Vec<MangaPanel> = sqlx::query_as("SELECT * FROM manga_panel")
         .fetch_all(&pool)
         .await
         .unwrap();
 
-    let total_manga = manga_folders.len() as u32;
-    let mut total_panels: u32 = 0;
-    let mut total_panels_read: u32 = 0;
-    let mut total_panels_remaining: u32 = 0;
-    let mut total_time_spent_reading: u32 = 0;
-
-    // count total panels, total panels read, total panels remaining
-    for folder in &manga_folders {
-        let (total, total_read, total_remaining) =
-            count_manga_panels(&folder.full_path, &manga_panels);
-
-        total_panels += total;
-        total_panels_read += total_read;
-        total_panels_remaining += total_remaining;
-    }
-
-    // calculate total time spent reading
-    for folder in &manga_folders {
-        total_time_spent_reading += folder.time_spent_reading;
-    }
+    let (total_panels, total_panels_read, total_panels_remaining) =
+        count_global_manga_panels(&manga_panels);
 
     Stats {
         total_manga,
@@ -136,6 +191,27 @@ pub async fn create_stats(handle: AppHandle) -> Stats {
         total_panels_remaining,
         total_time_spent_reading,
     }
+}
+
+fn count_global_manga_panels(manga_panels: &Vec<MangaPanel>) -> (u32, u32, u32) {
+    let mut total_panels_read: Vec<String> = Vec::new();
+
+    for panel in manga_panels {
+        if panel.is_read {
+            //println!("Panel is read: {}", panel.full_path);
+            total_panels_read.push(panel.full_path.clone());
+        }
+    }
+    let total_panels_remaining: u32 =
+        manga_panels.iter().filter(|panel| !panel.is_read).count() as u32;
+
+    //println!("Total panels: {}", total_panels.len());
+
+    (
+        manga_panels.len() as u32,
+        total_panels_read.len() as u32,
+        total_panels_remaining,
+    )
 }
 
 fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) -> (u32, u32, u32) {
