@@ -35,10 +35,10 @@ export default function Manga() {
     fetchGlobalManga().then((manga) => {
       if (manga) {
         setCurrentManga(manga as MangaFolderType);
-				console.log("manga:", manga);
-				if (manga.double_panels) {
-					setIsDoublePanels(true);
-				}
+        console.log("manga:", manga);
+        if (manga.double_panels) {
+          setIsDoublePanels(true);
+        }
       }
     });
   }, []);
@@ -301,6 +301,9 @@ export default function Manga() {
                   height={currentMangaPanel.height}
                 />
               </>
+              <h1 className="fixed left-50 bottom-1 text-xs font-semibold text-muted-foreground">
+								{`${currentPanelIndex}/${mangaPanels.length - 1}`} 
+              </h1>
             </div>
           </>
         )}
