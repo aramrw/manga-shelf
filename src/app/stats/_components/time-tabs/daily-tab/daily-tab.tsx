@@ -31,7 +31,7 @@ export default function DailyTab() {
       <CardHeader>
         <CardTitle>Progress Tracker</CardTitle>
         <CardDescription className="font-medium">
-          Last updated @ {new Date().toLocaleDateString()} at{" "}
+          Last Updated : {new Date().toLocaleDateString()} @{" "}
           {new Date().toLocaleTimeString()}
         </CardDescription>
         <Separator className="h-0.5 w-[270px] rounded-sm" />
