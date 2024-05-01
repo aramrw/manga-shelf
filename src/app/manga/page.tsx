@@ -301,7 +301,7 @@ export default function Manga() {
                   height={currentMangaPanel.height}
                 />
               </>
-              <h1 className="fixed left-50 bottom-1 text-xs font-semibold text-muted-foreground">
+              <h1 className="fixed left-50 bottom-1 text-xs font-semibold text-muted-foreground pointer-events-none">
 								{`${currentPanelIndex}/${mangaPanels.length - 1}`} 
               </h1>
             </div>
