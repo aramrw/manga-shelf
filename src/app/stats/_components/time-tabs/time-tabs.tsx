@@ -1,6 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DailyTab from "./daily-tab/daily-tab";
-import Heatmap from "../heatmap";
 
 export default function TimeTabs() {
   return (
