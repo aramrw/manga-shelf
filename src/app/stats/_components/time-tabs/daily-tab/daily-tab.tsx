@@ -29,7 +29,7 @@ export default function DailyTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Progress Tracker</CardTitle>
+        <CardTitle>Progress & Statistics</CardTitle>
         <CardDescription className="font-medium">
           Last Updated : {new Date().toLocaleDateString()} @{" "}
           {new Date().toLocaleTimeString()}
