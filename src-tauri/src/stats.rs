@@ -21,6 +21,58 @@ pub struct MangaStats {
     pub total_panels_remaining: u32,
 }
 
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct HeatmapHelper {
+    pub date: String,
+    pub count: u32,
+}
+
+#[tauri::command]
+pub async fn get_read_panel_dates(handle: AppHandle) -> Vec<HeatmapHelper> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    let panels: Vec<MangaPanel> = sqlx::query_as(
+        "
+    SELECT *
+    FROM manga_panel
+    ORDER BY created_at DESC, updated_at DESC
+    ",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+
+    let read_panels: Vec<&MangaPanel> = panels.iter().filter(|p| p.is_read).collect();
+
+    let mut dates_vec: Vec<HeatmapHelper> = Vec::new();
+
+    for p in read_panels {
+        //let updated_at = NaiveDateTime::parse_from_str(&p.updated_at, "%Y-%m-%d %H:%M:%S").unwrap();
+
+        let split_date: Vec<&str> = p.updated_at.splitn(2, ' ').collect();
+        let date = split_date[0].to_string();
+
+        match dates_vec.iter().position(|d| d.date == date) {
+            Some(i) => dates_vec[i].count += 1,
+            None => {
+                dates_vec.push(HeatmapHelper {
+                    date: date.clone(),
+                    count: 1,
+                });
+            }
+        }
+    }
+
+    // replace - with / in the dates
+    
+    for entry in &mut dates_vec {
+        entry.date = entry.date.replace('-', "/");
+    }
+
+
+    dates_vec
+}
+
 #[tauri::command]
 pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
@@ -51,9 +103,9 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
         // parse created_at and updated_at from sqlite 'localtime'
 
         let updated_at =
-            NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
-        let created_at =
             NaiveDateTime::parse_from_str(&current_manga.updated_at, "%Y-%m-%d %H:%M:%S").unwrap();
+        let created_at =
+            NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
 
         // check if created_at and updated_at are today
 
