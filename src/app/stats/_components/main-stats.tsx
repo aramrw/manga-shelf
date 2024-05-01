@@ -1,15 +1,16 @@
 "use client";
 
+import Loading from "@/app/_components/loading";
 import { Separator } from "@/components/ui/separator";
 import { invoke } from "@tauri-apps/api/tauri";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export type MainStatsType = {
   total_manga: number;
   total_panels: number;
   total_panels_read: number;
   total_panels_remaining: number;
-	total_time_spent_reading: number;
+  total_time_spent_reading: number;
 };
 
 export default function MainStats() {
@@ -23,19 +24,19 @@ export default function MainStats() {
     });
   }, []);
 
-	function calculateTimeSpentReading(time: number | undefined) {
-		// if time (seconds) is greater than a minute render both minutes and seconds
-		// else render only seconds
-		if (time && time > 60) {
-			const minutes = Math.floor(time / 60);
-			const seconds = time % 60;
-			return `${minutes}m ${seconds}s`;
-		} else if (time) {
-			return `${time}s`;
-		} else {
-			return "0s";
-		}
-	}
+  function calculateTimeSpentReading(time: number | undefined) {
+    // if time (seconds) is greater than a minute render both minutes and seconds
+    // else render only seconds
+    if (time && time > 60) {
+      const minutes = Math.floor(time / 60);
+      const seconds = time % 60;
+      return `${minutes}m ${seconds}s`;
+    } else if (time) {
+      return `${time}s`;
+    } else {
+      return "0s";
+    }
+  }
 
   return (
     <div className="w-full flex flex-col justify-center items-center h-fit bg-card rounded-xl shadow-md outline outline-border p-2">
@@ -45,35 +46,55 @@ export default function MainStats() {
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Total Manga</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_manga}
+            {mainStats?.total_manga ? (
+              mainStats.total_manga
+            ) : (
+              <Loading size={15} />
+            )}
           </span>
         </li>
         <Separator className="w-[1.1px] h-11" />
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Total Panels</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_panels}
+            {mainStats?.total_panels ? (
+              mainStats?.total_panels
+            ) : (
+              <Loading size={15} />
+            )}
           </span>
         </li>
         <Separator className="w-[1px] h-11" />
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Panels Read</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_panels_read}
+            {mainStats?.total_panels_read ? (
+              mainStats?.total_panels_read
+            ) : (
+              <Loading size={15} />
+            )}
           </span>
         </li>
         <Separator className="w-[1.1px] h-11" />
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Panels Remaining</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_panels_remaining}
+            {mainStats?.total_panels_remaining ? (
+              mainStats?.total_panels_remaining
+            ) : (
+              <Loading size={15} />
+            )}
           </span>
         </li>
         <Separator className="w-[1.1px] h-11" />
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Time Spent Reading</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-						{calculateTimeSpentReading(mainStats?.total_time_spent_reading)}
+            {calculateTimeSpentReading(mainStats?.total_time_spent_reading) ? (
+              calculateTimeSpentReading(mainStats?.total_time_spent_reading)
+            ) : (
+              <Loading size={15} />
+            )}
           </span>
         </li>
       </ul>
