@@ -71,7 +71,7 @@ export default function Dashboard() {
           if (dirEntries && dirEntries[0] && dirEntries?.[0]?.name) {
             if (
               fileTypes.some((fileType) =>
-                dirEntries[0]!.name!.includes(fileType),
+                dirEntries[0]!.name!.toLowerCase().includes(fileType),
               )
             ) {
               mangaFolderPaths.push(dir);

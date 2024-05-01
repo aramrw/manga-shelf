@@ -72,7 +72,7 @@ export default function ParentFolder({
                 (fileType) =>
                   entry.children &&
                   entry.children[0].name &&
-                  entry.children[0].name.includes(fileType),
+                  entry.children[0].name.toLowerCase().includes(fileType),
               )
             ) {
               mangaFolderPaths.push(entry.path);
