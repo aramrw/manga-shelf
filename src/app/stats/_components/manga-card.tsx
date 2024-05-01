@@ -68,13 +68,13 @@ export default function MangaCard({
             <ul className="flex flex-row justify-center items-center gap-2">
               <li className="flex flex-col justify-center items-center ">
                 <label className="font-semibold text-[9.5px]">Updated</label>
-                <span className="font-medium bg-accent-foreground rounded-sm px-0.5 text-[7px]">
+                <span className="font-medium bg-muted rounded-sm px-0.5 text-[7px]">
                   {mangaFolder.updated_at}
                 </span>
               </li>
               <li className="flex flex-col justify-center items-center">
                 <label className="font-semibold text-[9.5px]">Created</label>
-                <span className="font-medium bg-accent-foreground rounded-sm px-0.5 text-[7px]">
+                <span className="font-medium bg-muted rounded-sm px-0.5 text-[7px]">
                   {mangaFolder.created_at}
                 </span>
               </li>
