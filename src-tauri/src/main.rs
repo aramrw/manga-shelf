@@ -39,6 +39,7 @@ fn main() {
             stats::fetch_daily_manga_folders,
             stats::create_manga_stats,
             stats::create_stats,
+            stats::get_read_panel_dates,
             misc::show_in_folder,
         ])
         .run(tauri::generate_context!())
