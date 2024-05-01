@@ -26,10 +26,14 @@ export default function MangaCard({
   function calculateTimeSpentReading(time: number | undefined) {
     // if time (seconds) is greater than a minute render both minutes and seconds
     // else render only seconds
-    if (time && time > 60) {
+    if (time && time >= 60 && time < 3600) {
       const minutes = Math.floor(time / 60);
       const seconds = time % 60;
       return `${minutes}m ${seconds}s`;
+    } else if (time && time >= 3600) {
+      const hours = Math.floor(time / 3600);
+      const minutes = Math.floor((time % 3600) / 60);
+      return `${hours}h ${minutes}m`;
     } else if (time) {
       return `${time}s`;
     } else {

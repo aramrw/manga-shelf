@@ -3,7 +3,7 @@
 import Loading from "@/app/_components/loading";
 import { Separator } from "@/components/ui/separator";
 import { invoke } from "@tauri-apps/api/tauri";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type MainStatsType = {
   total_manga: number;
@@ -27,10 +27,14 @@ export default function MainStats() {
   function calculateTimeSpentReading(time: number | undefined) {
     // if time (seconds) is greater than a minute render both minutes and seconds
     // else render only seconds
-    if (time && time > 60) {
+    if (time && time >= 60 && time < 3600) {
       const minutes = Math.floor(time / 60);
       const seconds = time % 60;
       return `${minutes}m ${seconds}s`;
+    } else if (time && time >= 3600) {
+      const hours = Math.floor(time / 3600);
+      const minutes = Math.floor((time % 3600) / 60);
+      return `${hours}h ${minutes}m`;
     } else if (time) {
       return `${time}s`;
     } else {
@@ -40,7 +44,7 @@ export default function MainStats() {
 
   return (
     <div className="w-full flex flex-col justify-center items-center h-fit bg-card rounded-xl shadow-md outline outline-border p-2">
-      <h1 className="font-bold rounded-md px-1">Main Stats</h1>
+      <h1 className="font-bold rounded-md px-1">All Time Stats</h1>
       <Separator className="h-[1.1px] w-1/5 mb-1.5 mr-0.5" />
       <ul className="flex flex-row justify-center items-start gap-3 pb-0.5">
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
