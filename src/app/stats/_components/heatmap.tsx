@@ -24,6 +24,7 @@ const Heatmap = () => {
       <HeatMap
 				className="font-semibold"
         value={panelDates}
+				style={{ color: "#374253" }}
         weekLabels={["S", "M", "T", "W", "T", "F", "S"]}
         startDate={new Date("2024/01/01")}
         endDate={new Date()}
