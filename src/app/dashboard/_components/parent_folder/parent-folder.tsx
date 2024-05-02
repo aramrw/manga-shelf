@@ -10,6 +10,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import FolderContextMenu from "./folder-context-menu";
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
 
@@ -127,7 +128,7 @@ export default function ParentFolder({
       <li
         tabIndex={0}
         className={cn(
-          "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary focus:outline focus:outline-0 focus:ring-2 focus:ring-muted-foreground focus:ring-opacity-50 ring-inset",
+          "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-secondary focus-visible:outline focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-muted-foreground focus-visible:ring-opacity-50 ring-inset",
           parentFolder.as_child && "bg-accent-foreground",
         )}
         onKeyDown={(e) => {
@@ -168,28 +169,16 @@ export default function ParentFolder({
             </li>
           )}
           <li className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
-            {mangaFolders.map((mangaFolder, index) => (
-              <HoverCard key={`${mangaFolder.full_path}-${index}`}>
-                <HoverCardTrigger className="w-full h-full">
-                  <h1
-                    tabIndex={0}
-                    className={cn(
-                      "z-50 bg-accent py-1 px-1 text-xs font-bold border-t-2 border-primary hover:opacity-70 transition-opacity duration-100 text-nowrap overflow-hidden w-full focus:outline-none focus:ring-2 focus:ring-muted-foreground focus:ring-opacity-50 ring-inset",
-                    )}
-                    onClick={() => handleMangaClick(mangaFolder.full_path)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleMangaClick(mangaFolder.full_path);
-                      }
-                    }}
-                  >
-                    {mangaFolder.title}
-                  </h1>
-                </HoverCardTrigger>
-                <HoverCardContent className="z-50 w-fit h-fit p-1 font-semibold text-xs">
-                  {mangaFolder.title}
-                </HoverCardContent>
-              </HoverCard>
+            {mangaFolders.map((folder, index) => (
+              <FolderContextMenu
+								key={`manga${index}`}
+                folder={folder}
+                setMangaFolders={setMangaFolders}
+                setParentFolders={setParentFolders}
+                handleMangaClick={handleMangaClick}
+                isMangaFolder
+								asChild
+              />
             ))}
           </li>
         </>

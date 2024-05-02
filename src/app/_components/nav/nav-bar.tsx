@@ -55,7 +55,7 @@ export default function NavBar() {
           <Link
             href=""
             onClick={handleGoBack}
-            className="focus:outline-none focus:ring-1 focus:ring-white ring-opacity-50 rounded-sm"
+            className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm"
           >
             <ArrowLeftStartOnRectangleIcon className="w-5 h-auto" />
           </Link>
@@ -64,7 +64,7 @@ export default function NavBar() {
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
             <Link
               href="/stats"
-              className="focus:outline-none focus:ring-1 focus:ring-white ring-opacity-50 rounded-sm"
+              className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm"
             >
               <BarChart3 className="w-5 h-auto" strokeWidth={2.4} />
             </Link>
@@ -72,7 +72,7 @@ export default function NavBar() {
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
             <Link
               href=""
-              className="focus:outline-none focus:ring-1 focus:ring-white ring-opacity-50 rounded-sm"
+              className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
