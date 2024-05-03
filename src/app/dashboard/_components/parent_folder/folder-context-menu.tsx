@@ -58,7 +58,7 @@ export default function FolderContextMenu({
             onClick={() => handleMangaClick(folder.full_path)}
             tabIndex={0}
           >
-            <li className="p-0 px-0.5 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-muted">
+            <li className="p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-muted">
               <h1 className="w-full overflow-hidden text-nowrap">
                 {folder.title}
               </h1>
