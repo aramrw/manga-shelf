@@ -1,5 +1,5 @@
+use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use tauri::{AppHandle, Manager};
-use sqlx::{migrate::MigrateDatabase,Sqlite, SqlitePool};
 use tokio::sync::Mutex;
 
 pub fn create_database(path: &str, handle: AppHandle) {
@@ -11,16 +11,19 @@ pub fn create_database(path: &str, handle: AppHandle) {
             }
 
             let sqlite_pool = SqlitePool::connect_lazy(path).unwrap();
-            handle.manage(Mutex::new(sqlite_pool.clone())); 
-    
+            handle.manage(Mutex::new(sqlite_pool.clone()));
+
             migrate_parent_folder_table(&sqlite_pool).await.unwrap();
             migrate_manga_folder_table(&sqlite_pool).await.unwrap();
             migrate_global_table(&sqlite_pool).await.unwrap();
             migrate_manga_panel_table(&sqlite_pool).await.unwrap();
-            
+            migrate_stats_table(&sqlite_pool).await.unwrap();
+            migrate_heatmap_table(&sqlite_pool).await.unwrap();
+
             Ok::<(), sqlx::Error>(())
         })
-    }).unwrap();
+    })
+    .unwrap();
 }
 
 pub async fn migrate_parent_folder_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
@@ -42,8 +45,6 @@ pub async fn migrate_parent_folder_table(sqlite_pool: &SqlitePool) -> Result<(),
 
     Ok(())
 }
-
-
 
 pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
@@ -110,3 +111,22 @@ pub async fn migrate_manga_panel_table(sqlite_pool: &SqlitePool) -> Result<(), s
 
     Ok(())
 }
+
+pub async fn migrate_stats_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS stats 
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            total_manga INTEGER DEFAULT 0,
+            total_panels INTEGER DEFAULT 0,
+            total_panels_read INTEGER DEFAULT 0,
+            total_panels_remaining INTEGER DEFAULT 0,
+            total_time_spent_reading INTEGER DEFAULT 0
+        )",
+    )
+    .execute(sqlite_pool)
+    .await?;
+
+    Ok(())
+}
+
