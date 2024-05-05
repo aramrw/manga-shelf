@@ -477,8 +477,6 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
     last
 }
 
-
-
 #[tauri::command]
 pub async fn update_folder_time_spent_reading(
     folder_path: String,
