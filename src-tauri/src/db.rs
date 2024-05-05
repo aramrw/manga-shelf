@@ -130,3 +130,19 @@ pub async fn migrate_stats_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::E
     Ok(())
 }
 
+pub async fn migrate_heatmap_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS heatmap
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            count INTEGER NOT NULL
+        )",
+    )
+    .execute(sqlite_pool)
+    .await?;
+
+    Ok(())
+}
+
+
