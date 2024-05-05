@@ -17,8 +17,9 @@ export default function MainStats() {
   const [mainStats, setMainStats] = useState<MainStatsType>();
 
   useEffect(() => {
-    invoke("create_stats").then((stats) => {
+    invoke("update_global_stats").then((stats) => {
       if (stats) {
+				//console.log(stats);
         setMainStats(stats as MainStatsType);
       }
     });
@@ -50,7 +51,7 @@ export default function MainStats() {
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Total Manga</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_manga ? (
+            {mainStats && mainStats.total_manga >= 0 ? (
               mainStats.total_manga
             ) : (
               <Loading size={15} />
@@ -61,7 +62,7 @@ export default function MainStats() {
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Total Panels</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_panels ? (
+            {mainStats && mainStats.total_panels >= 0 ? (
               mainStats?.total_panels
             ) : (
               <Loading size={15} />
@@ -72,7 +73,7 @@ export default function MainStats() {
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Panels Read</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_panels_read ? (
+            {mainStats && mainStats.total_panels_read >= 0 ? (
               mainStats?.total_panels_read
             ) : (
               <Loading size={15} />
@@ -83,7 +84,7 @@ export default function MainStats() {
         <li className="flex flex-col justify-center items-start gap-0.5 text-xs bg-muted px-2 pb-1.5 pt-0.5 rounded-md">
           <label className="font-semibold underline">Panels Remaining</label>
           <span className="font-medium bg-accent-foreground rounded-sm px-0.5">
-            {mainStats?.total_panels_remaining ? (
+            {mainStats && mainStats.total_panels_remaining >= 0 ? (
               mainStats?.total_panels_remaining
             ) : (
               <Loading size={15} />
