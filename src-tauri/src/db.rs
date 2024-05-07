@@ -135,7 +135,7 @@ pub async fn migrate_heatmap_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx:
         "CREATE TABLE IF NOT EXISTS heatmap
         (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
+            date TEXT NOT NULL UNIQUE,
             count INTEGER NOT NULL
         )",
     )
