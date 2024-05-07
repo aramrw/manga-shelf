@@ -23,6 +23,7 @@ tokio = { version = "1", features = ["full"] }
 uuid = { version = "1.8.0", features = ["v4"] }
 imagesize = { version = "0.12.0" }
 chrono = { version = "0.4.38", features = ["serde"] }
+regex = { version = "1.10.4" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

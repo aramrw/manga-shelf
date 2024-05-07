@@ -413,15 +413,30 @@ pub async fn get_next_or_previous_manga_folder(
         .to_str()
         .unwrap();
 
-    let manga_folder: Vec<MangaFolder> =
+    let mut manga_folders: Vec<MangaFolder> =
         sqlx::query_as("SELECT * FROM manga_folder WHERE full_path LIKE ? || '%'")
             .bind(parent_path)
             .fetch_all(&pool)
             .await
             .unwrap();
 
+    // sort the manga_folder
+    let re = regex::Regex::new(r"\d+").unwrap();
+
+    manga_folders.sort_by(|a, b| {
+        let a_num: i32 = re
+            .find(&a.title)
+            .and_then(|m| m.as_str().parse().ok())
+            .unwrap_or_default();
+        let b_num: i32 = re
+            .find(&b.title)
+            .and_then(|m| m.as_str().parse().ok())
+            .unwrap_or_default();
+        a_num.cmp(&b_num)
+    });
+
     // find the index in the vector where the current folder is
-    let index = manga_folder
+    let index = manga_folders
         .iter()
         .position(|x| x.full_path == current_folder_path)
         .unwrap();
@@ -429,15 +444,15 @@ pub async fn get_next_or_previous_manga_folder(
     // return the next folder in the vector
 
     if is_next {
-        if index + 1 >= manga_folder.len() {
+        if index + 1 >= manga_folders.len() {
             return None;
         }
-        Some(manga_folder[index + 1].clone())
+        Some(manga_folders[index + 1].clone())
     } else {
         if index == 0 {
             return None;
         }
-        Some(manga_folder[index - 1].clone())
+        Some(manga_folders[index - 1].clone())
     }
 }
 
