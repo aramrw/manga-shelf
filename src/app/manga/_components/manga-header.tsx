@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { invoke } from "@tauri-apps/api/tauri";
 import {
-  BetweenVerticalStart,
+  //BetweenVerticalStart,
   Columns2,
   RectangleVertical,
 } from "lucide-react";
