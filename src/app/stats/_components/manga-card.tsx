@@ -106,14 +106,18 @@ export default function MangaCard({
                     </span>
                   </li>
                 </ul>
-                <li className="text-center flex flex-col justify-center items-center bg-muted rounded-sm p-0.5">
-                  <label className="font-semibold text-[9.5px]">
-                    Time Spent Reading
-                  </label>
-                  <span className="bg-accent-foreground rounded-sm px-0.5 font-medium text-[9px]">
-                    {calculateTimeSpentReading(mangaFolder.time_spent_reading)}
-                  </span>
-                </li>
+                {/* 
+                  <li className="text-center flex flex-col justify-center items-center bg-muted rounded-sm p-0.5">
+                    <label className="font-semibold text-[9.5px]">
+                      Time Spent Reading
+                    </label>
+                    <span className="bg-accent-foreground rounded-sm px-0.5 font-medium text-[9px]">
+                      {calculateTimeSpentReading(
+                        mangaFolder.time_spent_reading,
+                      )}
+                    </span>
+                  </li>
+                */}
               </>
             ) : (
               <span className="text-[9px] font-semibold">
