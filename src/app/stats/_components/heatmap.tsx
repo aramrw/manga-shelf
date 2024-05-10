@@ -13,7 +13,7 @@ const Heatmap = () => {
   const [panelDates, setPanelDates] = useState<DateCount[]>();
 
   useEffect(() => {
-    invoke("get_read_panel_dates").then((res) => {
+    invoke("fetch_heatmap").then((res) => {
       console.log(res);
       setPanelDates(res as DateCount[]);
     });
