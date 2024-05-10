@@ -38,8 +38,9 @@ fn main() {
             global::get_global_manga,
             stats::fetch_daily_manga_folders,
             stats::create_manga_stats,
-            stats::get_read_panel_dates,
             stats::update_global_stats,
+            stats::update_heatmap_count,
+            stats::fetch_heatmap,
             misc::show_in_folder,
         ])
         .run(tauri::generate_context!())
