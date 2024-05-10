@@ -29,103 +29,35 @@ pub struct Heatmap {
 }
 
 #[tauri::command]
-pub async fn get_read_panel_dates(handle: AppHandle) -> Vec<Heatmap> {
+pub async fn update_heatmap_count(count: u16, handle: AppHandle) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-    let mut is_stale: bool = false;
+    let mut today = chrono::Local::now().date_naive().to_string();
 
-    let heatmap: Vec<Heatmap> = match sqlx::query_as("SELECT * FROM heatmap")
+    today = today.replace('-', "/");
+
+    sqlx::query("INSERT OR IGNORE INTO heatmap (date, count) VALUES (?, ?)")
+        .bind(&today)
+        .bind(count)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    sqlx::query("UPDATE heatmap SET count = count + ? WHERE date = ?")
+        .bind(count)
+        .bind(&today)
+        .execute(&pool)
+        .await
+        .unwrap();
+}
+
+#[tauri::command]
+pub async fn fetch_heatmap(handle: AppHandle) -> Vec<Heatmap> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    let mut heatmap: Vec<Heatmap> = sqlx::query_as("SELECT * FROM heatmap")
         .fetch_all(&pool)
         .await
-    {
-        Ok(heatmap) => heatmap,
-        Err(e) => {
-            eprintln!("Failed to fetch heatmap: {}", e);
-            vec![Heatmap::default()]
-        }
-    };
-
-    let panels: Vec<MangaPanel> = sqlx::query_as(
-        "
-        SELECT *
-        FROM manga_panel
-        ORDER BY created_at DESC, updated_at DESC
-        ",
-    )
-    .fetch_all(&pool)
-    .await
-    .unwrap();
-
-    let read_panels: Vec<&MangaPanel> = panels.iter().filter(|p| p.is_read).collect();
-    let mut dates_vec: Vec<Heatmap> = Vec::new();
-
-    for p in read_panels {
-        //let updated_at = NaiveDateTime::parse_from_str(&p.updated_at, "%Y-%m-%d %H:%M:%S").unwrap();
-
-        let split_date: Vec<&str> = p.updated_at.splitn(2, ' ').collect();
-        let date = split_date[0].to_string();
-
-        match dates_vec.iter().position(|d| d.date == date) {
-            Some(i) => dates_vec[i].count += 1,
-            None => {
-                dates_vec.push(Heatmap {
-                    id: 1,
-                    date: date.clone(),
-                    count: 1,
-                });
-            }
-        }
-    }
-
-    // replace - with / in the dates
-    for entry in &mut dates_vec {
-        entry.date = entry.date.replace('-', "/");
-    }
-
-    if heatmap.is_empty() {
-        for new in &dates_vec {
-            sqlx::query(
-                "
-            INSERT INTO heatmap 
-            (date, count) 
-            VALUES 
-            (?, ?)                        
-            ",
-            )
-            .bind(&new.date)
-            .bind(new.count)
-            .execute(&pool)
-            .await
-            .unwrap();
-        }
-    } else {
-        for new in &dates_vec {
-            for hm in &heatmap {
-                if hm.date == new.date && new.count > hm.count {
-                    is_stale = true;
-
-                    sqlx::query(
-                        "
-                    INSERT OR REPLACE INTO heatmap 
-                    (date, count) 
-                    VALUES 
-                    (?, ?)                        
-                    ",
-                    )
-                    .bind(&new.date)
-                    .bind(new.count)
-                    .execute(&pool)
-                    .await
-                    .unwrap();
-                }
-            }
-        }
-    }
-
-    if is_stale {
-        dates_vec
-    } else {
-        heatmap
-    }
+        .unwrap();
+    heatmap
 }
 
 #[tauri::command]
@@ -286,6 +218,12 @@ pub async fn create_global_stats(pool: &SqlitePool) -> Stats {
     let (total_panels, total_panels_read, total_panels_remaining) =
         count_global_manga_panels(&manga_panels);
 
+    // reset time spent reading for every folder after counting
+    sqlx::query("UPDATE manga_folder SET time_spent_reading = 0")
+        .execute(pool)
+        .await
+        .unwrap();
+
     Stats {
         total_manga,
         total_panels,
@@ -321,12 +259,8 @@ pub async fn update_global_stats(handle: AppHandle) -> Stats {
     new_stats_vec.push(new_stats.total_panels_read);
     new_stats_vec.push(new_stats.total_panels_remaining);
 
-    if new_stats.total_time_spent_reading > old_stats.total_time_spent_reading {
-        new_stats_vec.push(new_stats.total_time_spent_reading);
-    } else {
-        new_stats.total_time_spent_reading = old_stats.total_time_spent_reading;
-        new_stats_vec.push(new_stats.total_time_spent_reading);
-    }
+    new_stats_vec.push(new_stats.total_time_spent_reading + old_stats.total_time_spent_reading);
+    new_stats.total_time_spent_reading += old_stats.total_time_spent_reading;
 
     for i in 0..old_stats_vec.len() {
         if old_stats_vec[i] != new_stats_vec[i] {
