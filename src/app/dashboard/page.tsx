@@ -21,7 +21,7 @@ export interface ParentFolderType {
 
 export interface MangaFolderType extends ParentFolderType {
   time_spent_reading: number;
-	double_panels: boolean;
+  double_panels: boolean;
 }
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
@@ -134,23 +134,23 @@ export default function Dashboard() {
             <PlusCircleIcon className="h-3 w-auto" />
           </span>
         </Button>
-          {parentFolders.length > 0 && (
-            <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
-              {parentFolders.map((folder, index) => {
-                return (
-                  <FolderContexMenu
-                    key={"parent" + index}
-                    folder={folder}
-                    setParentFolders={setParentFolders}
-                    setMangaFolders={setMangaFolders}
-                  />
-                );
-              })}
-            </ul>
-          )}
-          {mangaFolders.length > 0 && (
-            <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
-              {mangaFolders.map((folder, index) => (
+        {parentFolders.length > 0 && (
+          <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
+            {parentFolders.map((folder, index) => {
+              return (
+                <FolderContexMenu
+                  key={"parent" + index}
+                  folder={folder}
+                  setParentFolders={setParentFolders}
+                  setMangaFolders={setMangaFolders}
+                />
+              );
+            })}
+          </ul>
+        )}
+        {mangaFolders.length > 0 && (
+          <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
+            {mangaFolders.map((folder, index) => (
                 <FolderContexMenu
                   key={"manga" + index}
                   folder={folder}
@@ -159,9 +159,9 @@ export default function Dashboard() {
                   handleMangaClick={handleMangaClick}
                   isMangaFolder
                 />
-              ))}
-            </ul>
-          )}
+            ))}
+          </ul>
+        )}
       </div>
     </main>
   );

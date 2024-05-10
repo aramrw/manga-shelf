@@ -157,7 +157,7 @@ export default function ParentFolder({
         </h1>
       </li>
       {isExpanded && (
-        <>
+        <div className="max-h-60 w-full overflow-auto pr-0.5">
           {parentFolders.length > 0 && (
             <li className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
               {parentFolders.map((folder, index) => (
@@ -171,17 +171,17 @@ export default function ParentFolder({
           <li className="w-full h-fit flex flex-col justify-center items-center bg-secondary">
             {mangaFolders.map((folder, index) => (
               <FolderContextMenu
-								key={`manga${index}`}
+                key={`manga${index}`}
                 folder={folder}
                 setMangaFolders={setMangaFolders}
                 setParentFolders={setParentFolders}
                 handleMangaClick={handleMangaClick}
                 isMangaFolder
-								asChild
+                asChild
               />
             ))}
           </li>
-        </>
+        </div>
       )}
     </ul>
   );
