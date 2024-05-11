@@ -96,6 +96,19 @@ export default function ParentFolder({
   }, [parentFolder.full_path, readDirSort]);
 
   const handleMangaClick = (mangaFolderPath: string) => {
+    console.log(mangaFolders);
+    const index = mangaFolders.findIndex(
+      (fold) => fold.full_path === mangaFolderPath,
+    );
+    for (let i = 0; i < mangaFolders.length; i++) {
+      //console.log(`setting ${mangaFolders[i].id} as read`);
+      if (i < index) {
+        invoke("set_folder_read", { path: mangaFolders[i]?.full_path });
+      } else {
+        invoke("set_folder_unread", { path: mangaFolders[i]?.full_path });
+      }
+    }
+    console.log("pushing to next manga");
     invoke("set_global_manga", { fullPath: mangaFolderPath }).then(() => {
       router.push("/manga");
     });
