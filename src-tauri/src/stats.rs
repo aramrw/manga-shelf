@@ -53,7 +53,7 @@ pub async fn update_heatmap_count(count: u16, handle: AppHandle) {
 #[tauri::command]
 pub async fn fetch_heatmap(handle: AppHandle) -> Vec<Heatmap> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-    let mut heatmap: Vec<Heatmap> = sqlx::query_as("SELECT * FROM heatmap")
+    let heatmap: Vec<Heatmap> = sqlx::query_as("SELECT * FROM heatmap")
         .fetch_all(&pool)
         .await
         .unwrap();
