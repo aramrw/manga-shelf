@@ -173,8 +173,8 @@ export default function Manga() {
       });
       setCurrentPanelIndex((prev) => prev + 2);
 
-			// then update the heatmap
-			invoke("update_heatmap_count", {count: 2});
+      // then update the heatmap
+      invoke("update_heatmap_count", { count: 2 });
     }
   };
 
@@ -186,7 +186,7 @@ export default function Manga() {
         zoomLevel: zoomLevel,
       });
       setCurrentPanelIndex((prev) => prev + 1);
-			invoke("update_heatmap_count", {count: 1});
+      invoke("update_heatmap_count", { count: 1 });
     }
   };
 
@@ -215,6 +215,8 @@ export default function Manga() {
             invoke("set_global_manga", {
               fullPath: (nextFolder as MangaFolderType).full_path,
             }).then(() => {
+              // update the currentManga as read before replacing
+              invoke("set_folder_read", { path: currentManga?.full_path });
               setCurrentManga(nextFolder as MangaFolderType);
             });
           }
@@ -251,6 +253,11 @@ export default function Manga() {
             invoke("set_global_manga", {
               fullPath: (nextFolder as MangaFolderType).full_path,
             }).then(() => {
+              // update the `nextFolder` as unread before replacing
+              // `nextFolder` actually refers to the previous folder
+              invoke("set_folder_unread", {
+                path: (nextFolder as MangaFolderType)?.full_path,
+              });
               setCurrentManga(nextFolder as MangaFolderType);
             });
           }
@@ -306,7 +313,7 @@ export default function Manga() {
                 />
               </>
               <h1 className="fixed left-50 bottom-1 text-xs font-semibold text-muted-foreground pointer-events-none">
-								{`${currentPanelIndex}/${mangaPanels.length - 1}`} 
+                {`${currentPanelIndex}/${mangaPanels.length - 1}`}
               </h1>
             </div>
           </>

@@ -22,6 +22,7 @@ export interface ParentFolderType {
 export interface MangaFolderType extends ParentFolderType {
   time_spent_reading: number;
   double_panels: boolean;
+  is_read: boolean;
 }
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
@@ -117,6 +118,7 @@ export default function Dashboard() {
 
   const handleMangaClick = (mangaFolderPath: string) => {
     invoke("set_global_manga", { fullPath: mangaFolderPath }).then(() => {
+      // update all prev manga except clicked on as read before pushing
       router.push("/manga");
     });
   };
@@ -151,14 +153,14 @@ export default function Dashboard() {
         {mangaFolders.length > 0 && (
           <ul className="w-full h-fit grid grid-cols-4 gap-2 mt-4">
             {mangaFolders.map((folder, index) => (
-                <FolderContexMenu
-                  key={"manga" + index}
-                  folder={folder}
-                  setParentFolders={setParentFolders}
-                  setMangaFolders={setMangaFolders}
-                  handleMangaClick={handleMangaClick}
-                  isMangaFolder
-                />
+              <FolderContexMenu
+                key={"manga" + index}
+                folder={folder}
+                setParentFolders={setParentFolders}
+                setMangaFolders={setMangaFolders}
+                handleMangaClick={handleMangaClick}
+                isMangaFolder
+              />
             ))}
           </ul>
         )}
