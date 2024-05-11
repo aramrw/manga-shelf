@@ -538,3 +538,16 @@ pub async fn update_folder_time_spent_reading(
 //     manga_panels
 // }
 //
+#[tauri::command]
+pub async fn set_folder_read(path: String, handle: AppHandle) {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    println!("setting {} as read", path);
+
+    sqlx::query("UPDATE manga_folder SET is_read = true WHERE full_path = ?")
+        .bind(path)
+        .execute(&pool)
+        .await
+        .unwrap();
+}
+
