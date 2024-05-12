@@ -35,12 +35,13 @@ pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), 
             is_expanded,
             time_spent_reading,
             double_panels,
+            is_read,
             created_at, 
             updated_at
         ) 
         VALUES
         (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )",
     )
     .bind(current_manga.id)
@@ -50,6 +51,7 @@ pub async fn set_global_manga(full_path: &str, handle: AppHandle) -> Result<(), 
     .bind(current_manga.is_expanded)
     .bind(current_manga.time_spent_reading)
     .bind(current_manga.double_panels)
+    .bind(current_manga.is_read)
     .bind(current_manga.created_at)
     .bind(current_manga.updated_at)
     .execute(&pool)
@@ -76,6 +78,7 @@ pub async fn get_global_manga(handle: AppHandle) -> Option<MangaFolder> {
         is_expanded: result.get("is_expanded"),
         time_spent_reading: result.get("time_spent_reading"),
         double_panels: result.get("double_panels"),
+        is_read: result.get("is_read"),
         created_at: result.get("created_at"),
         updated_at: result.get("updated_at"),
     })
@@ -97,6 +100,7 @@ pub async fn get_manga_by_path(full_path: &str, pool: &SqlitePool) -> MangaFolde
         is_expanded: result.get("is_expanded"),
         time_spent_reading: result.get("time_spent_reading"),
         double_panels: result.get("double_panels"),
+        is_read: result.get("is_read"),
         created_at: result.get("created_at"),
         updated_at: result.get("updated_at"),
     }
