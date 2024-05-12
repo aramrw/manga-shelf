@@ -80,6 +80,7 @@ pub async fn migrate_global_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
             is_expanded BOOLEAN DEFAULT 0,
             time_spent_reading INTEGER DEFAULT 0,
             double_panels BOOLEAN DEFAULT 0,
+            is_read BOOLEAN DEFAULT 0,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
