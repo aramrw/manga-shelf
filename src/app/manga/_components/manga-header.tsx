@@ -111,7 +111,7 @@ const MangaHeader = ({
   );
 
   const handleSetDoublePanels = () => {
-    console.log("setting double panels to", !doublePanels);
+    //console.log("setting double panels to", !doublePanels);
     invoke("update_folder_double_panels", {
       folderPath: currentManga.full_path,
       doublePanels: !doublePanels,
