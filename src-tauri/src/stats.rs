@@ -83,6 +83,7 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             is_expanded: row.get("is_expanded"),
             time_spent_reading: row.get("time_spent_reading"),
             double_panels: row.get("double_panels"),
+            is_read: row.get("is_read"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         };
