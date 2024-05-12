@@ -9,7 +9,12 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { MangaFolderType, ParentFolderType } from "../../page";
-import { BackspaceIcon, FireIcon, FolderIcon } from "@heroicons/react/16/solid";
+import {
+  BackspaceIcon,
+  EyeIcon,
+  FireIcon,
+  FolderIcon,
+} from "@heroicons/react/16/solid";
 import { invoke } from "@tauri-apps/api/tauri";
 import ParentFolder from "./parent-folder";
 import { cn } from "@/lib/utils";
@@ -22,13 +27,15 @@ export default function FolderContextMenu({
   setParentFolders,
   handleMangaClick,
 }: {
-  folder: ParentFolderType;
+  folder: ParentFolderType | MangaFolderType;
   isMangaFolder?: boolean;
   asChild?: boolean;
   setMangaFolders: React.Dispatch<React.SetStateAction<MangaFolderType[]>>;
   setParentFolders: React.Dispatch<React.SetStateAction<ParentFolderType[]>>;
   handleMangaClick?: (mangaFolderPath: string) => void;
 }) {
+  //console.log(folder);
+
   const invokeDeleteFolder = (id: string, path: string, allData: boolean) => {
     invoke("delete_folder", { id, path, allData }).then(() => {
       setMangaFolders((prev) => prev.filter((f) => f.id !== id));
@@ -47,7 +54,8 @@ export default function FolderContextMenu({
           <ul
             className={cn(
               "h-fit w-full p-1 bg-muted-foreground flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-sm transition-transform duration-100 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-muted-foreground ring-opacity-50 font-bold",
-              asChild && "p-0 bg-none font-semibold text-xs rounded-none bg-primary hover:opacity-80",
+              asChild &&
+              "p-0 bg-none font-semibold text-xs rounded-none bg-primary hover:opacity-80",
               !asChild && "hover:scale-[1.005] ",
             )}
             onKeyDown={(e) => {
@@ -58,10 +66,22 @@ export default function FolderContextMenu({
             onClick={() => handleMangaClick(folder.full_path)}
             tabIndex={0}
           >
-            <li className="p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-muted">
-              <h1 className="w-full overflow-hidden text-nowrap">
-                {folder.title}
-              </h1>
+            <li
+              className={cn(
+                "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-muted brightness-105",
+                "is_read" in folder && folder.is_read && "brightness-90",
+              )}
+            >
+              {"is_read" in folder && folder.is_read ? (
+                <h1 className="flex flex-row justify-center items-center w-full overflow-hidden text-nowrap gap-1">
+                  <EyeIcon className="w-4 h-auto" />
+                  {folder.title}
+                </h1>
+              ) : (
+                <h1 className="w-full overflow-hidden text-nowrap">
+                  {folder.title}
+                </h1>
+              )}
             </li>
           </ul>
         ) : (
