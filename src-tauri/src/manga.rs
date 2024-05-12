@@ -23,6 +23,7 @@ pub struct MangaFolder {
     pub is_expanded: bool,
     pub time_spent_reading: u32,
     pub double_panels: bool,
+    pub is_read: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -160,22 +161,7 @@ pub async fn update_manga_folders(
         let uuid = uuid::Uuid::new_v4().to_string();
         // gets the parent, file name, and extension of the path
         let split_path = split_path_parts(&path);
-
-        // create a MangaFolder struct to push into the manga_folders vector
-        let manga_folder = MangaFolder {
-            id: uuid.clone(),
-            title: split_path.file_name.clone(),
-            full_path: path.clone(),
-            as_child,
-            is_expanded,
-            time_spent_reading: 0,
-            double_panels: false,
-            created_at: "".to_string(),
-            updated_at: "".to_string(),
-        };
-
-        manga_folders.push(manga_folder);
-
+        
         sqlx::query(
             "INSERT INTO manga_folder 
         (
@@ -201,13 +187,21 @@ pub async fn update_manga_folders(
         )
         .bind(uuid)
         .bind(split_path.file_name)
-        .bind(path)
+        .bind(&path)
         .bind(as_child)
         .bind(is_expanded)
         .bind(0)
         .execute(&pool)
         .await
         .unwrap();
+
+        let updated_folder = sqlx::query_as("SELECT * FROM manga_folder WHERE full_path = ?")
+            .bind(&path)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+
+        manga_folders.push(updated_folder);
     }
 
     // return the manga_folders vector back to the frontend
@@ -233,6 +227,7 @@ pub async fn get_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
             is_expanded: row.get("is_expanded"),
             time_spent_reading: row.get("time_spent_reading"),
             double_panels: row.get("double_panels"),
+            is_read: row.get("is_read"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         };
@@ -512,7 +507,7 @@ pub async fn update_folder_time_spent_reading(
 pub async fn set_folder_read(path: String, handle: AppHandle) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
-    println!("setting {} as read", path);
+    //println!("setting {} as read", path);
 
     sqlx::query("UPDATE manga_folder SET is_read = true WHERE full_path = ?")
         .bind(path)
