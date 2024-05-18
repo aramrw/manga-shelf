@@ -18,7 +18,7 @@ pub fn create_database(path: &str, handle: AppHandle) {
             migrate_global_table(&sqlite_pool).await.unwrap();
             migrate_manga_panel_table(&sqlite_pool).await.unwrap();
             migrate_stats_table(&sqlite_pool).await.unwrap();
-            migrate_heatmap_table(&sqlite_pool).await.unwrap();
+            migrate_chart_table(&sqlite_pool).await.unwrap();
 
             Ok::<(), sqlx::Error>(())
         })
@@ -132,19 +132,19 @@ pub async fn migrate_stats_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::E
     Ok(())
 }
 
-pub async fn migrate_heatmap_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+
+pub async fn migrate_chart_table(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS heatmap
-        (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL UNIQUE,
-            count INTEGER NOT NULL
+        "CREATE TABLE IF NOT EXISTS chart (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            watchtime INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL UNIQUE
         )",
     )
-    .execute(sqlite_pool)
-    .await?;
+    .execute(pool)
+    .await
+    .unwrap();
 
     Ok(())
 }
-
 
