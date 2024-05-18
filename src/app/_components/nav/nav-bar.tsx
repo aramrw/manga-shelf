@@ -31,6 +31,7 @@ export default function NavBar() {
             folderPath: (result as MangaFolderType).full_path,
             timeSpentReading: elapsedTime,
           });
+					invoke("update_chart_watchtime", { watchTime: elapsedTime });
         });
         setStartTime(0);
       }
