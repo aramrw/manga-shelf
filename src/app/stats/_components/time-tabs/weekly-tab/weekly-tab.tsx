@@ -13,26 +13,29 @@ import "chart.js/auto";
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 
-export default function DailyTab() {
+export default function WeeklyTab() {
+  let now = new Date();
+  let month = now.getMonth(); // get the current month
+  let year = now.getFullYear(); // get the current year
+  let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const labels = Array.from({ length: daysInMonth }, (_, i) =>
+    (i + 1).toString(),
+  );
 
   const [stats, setStats] = useState<number[]>();
 
   useEffect(() => {
-      invoke("create_chart_stats", { range: "daily", }).then((daily) => {
+      invoke("create_chart_stats", {
+        range: "weekly",
+        daysInMonth: labels.length,
+      }).then((daily) => {
         setStats(daily as number[]);
-    })
-  }, [])
+      });
+  }, []);
 
   const data = {
-    labels: [
-      "Sun",
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-    ],
+    labels,
     datasets: [
       {
         label: " Watchtime Per Day (H) ",
@@ -63,7 +66,9 @@ export default function DailyTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="pointer-events-none select-none">Daily</CardTitle>
+        <CardTitle className="pointer-events-none select-none">
+          Weekly
+        </CardTitle>
         <CardDescription className="underline pointer-events-none select-none">
         </CardDescription>
       </CardHeader>
