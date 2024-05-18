@@ -41,8 +41,8 @@ fn main() {
             stats::fetch_daily_manga_folders,
             stats::create_manga_stats,
             stats::update_global_stats,
-            stats::update_heatmap_count,
-            stats::fetch_heatmap,
+            stats::create_chart_stats,
+            stats::update_chart_watchtime,
             misc::show_in_folder,
         ])
         .run(tauri::generate_context!())
