@@ -1,4 +1,5 @@
 use crate::manga::{get_panel_image_dimensions, split_path_parts, MangaFolder, MangaPanel};
+use chrono::Datelike;
 use chrono::{Local, NaiveDateTime};
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, SqlitePool};
@@ -21,43 +22,10 @@ pub struct MangaStats {
     pub total_panels_remaining: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
-pub struct Heatmap {
-    pub id: u32,
-    pub date: String,
-    pub count: u32,
-}
-
-#[tauri::command]
-pub async fn update_heatmap_count(count: u16, handle: AppHandle) {
-    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-    let mut today = chrono::Local::now().date_naive().to_string();
-
-    today = today.replace('-', "/");
-
-    sqlx::query("INSERT OR IGNORE INTO heatmap (date, count) VALUES (?, ?)")
-        .bind(&today)
-        .bind(count)
-        .execute(&pool)
-        .await
-        .unwrap();
-
-    sqlx::query("UPDATE heatmap SET count = count + ? WHERE date = ?")
-        .bind(count)
-        .bind(&today)
-        .execute(&pool)
-        .await
-        .unwrap();
-}
-
-#[tauri::command]
-pub async fn fetch_heatmap(handle: AppHandle) -> Vec<Heatmap> {
-    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-    let heatmap: Vec<Heatmap> = sqlx::query_as("SELECT * FROM heatmap")
-        .fetch_all(&pool)
-        .await
-        .unwrap();
-    heatmap
+#[derive(Serialize, Deserialize, Default, sqlx::FromRow)]
+pub struct Chart {
+    watchtime: u32,
+    updated_at: String,
 }
 
 #[tauri::command]
@@ -360,4 +328,129 @@ fn count_manga_panels(manga_folder_dir: &str, manga_panels: &Vec<MangaPanel>) ->
         total_panels_read.len() as u32,
         total_panels_remaining,
     )
+}
+
+#[tauri::command]
+pub async fn create_chart_stats(
+    range: String,
+    days_in_month: Option<u8>,
+    handle: AppHandle,
+) -> Vec<f32> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+
+    //let mut updated_this_week: Vec<Chart> = Vec::new();
+    let mut final_data: Vec<f32> = Vec::new();
+
+    let today = chrono::Local::now().naive_local().date();
+    let current_year = chrono::Local::now().year();
+    let current_month = today.month0();
+
+    if range == "daily" {
+        final_data = vec![0.0; 7];
+    } else if range == "weekly" {
+        final_data = vec![0.0; days_in_month.unwrap() as usize - 1];
+    } else if range == "monthly" {
+        final_data = vec![0.0; 11];
+    }
+
+    {
+        let data: Vec<Chart> = sqlx::query_as("SELECT * FROM chart ORDER BY updated_at DESC")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+
+        for entry in &data {
+            let last_watched_at =
+                chrono::NaiveDate::parse_from_str(&entry.updated_at, "%Y-%m-%d").unwrap();
+
+            if range == "daily" {
+                let week = today.week(chrono::Weekday::Mon);
+                let days = week.days();
+
+                if days.contains(&last_watched_at) {
+                    let weekday_index = last_watched_at.weekday().num_days_from_sunday();
+                    //println!("{}", weekday_index);
+                    final_data[weekday_index as usize] =
+                        ((entry.watchtime as f32 / 3600.0) * 100.0).round() / 100.0;
+                }
+            }
+
+            if range == "weekly" {
+                let split_date: Vec<&str> = entry.updated_at.split('-').collect();
+                let mut _month: u8 = 0;
+
+                {
+                    let split_month: Vec<&str> = split_date[1]
+                        .split("")
+                        .filter(|str| !str.is_empty())
+                        .collect();
+                    if split_month[0] == "0" {
+                        _month = split_month[1].parse().unwrap();
+                    } else {
+                        _month = split_date[1].parse().unwrap();
+                    }
+                }
+
+                if current_month as u8 + 1 == _month {
+                    let mut _day: usize = 0;
+
+                    let split_day: Vec<&str> = split_date[2]
+                        .split("")
+                        .filter(|str| !str.is_empty())
+                        .collect();
+                    if split_day[0] == "0" {
+                        _day = split_day[1].parse().unwrap();
+                    } else {
+                        _day = split_date[2].parse().unwrap();
+                    }
+
+                    final_data[_day - 1] =
+                        ((entry.watchtime as f32 / 3600.0) * 100.0).round() / 100.0;
+                }
+            }
+
+            if range == "monthly" && last_watched_at.year() == current_year {
+                let split_date: Vec<&str> = entry.updated_at.split('-').collect();
+                let mut _month: u8 = 0;
+
+                {
+                    let split_month: Vec<&str> = split_date[1]
+                        .split("")
+                        .filter(|str| !str.is_empty())
+                        .collect();
+                    if split_month[0] == "0" {
+                        _month = split_month[1].parse().unwrap();
+                    } else {
+                        _month = split_date[1].parse().unwrap();
+                    }
+                }
+
+                final_data[_month as usize - 1] +=
+                    ((entry.watchtime as f32 / 3600.0) * 100.0).round() / 100.0
+            }
+        }
+    }
+
+    final_data
+}
+
+#[tauri::command]
+pub async fn update_chart_watchtime(watch_time: u32, handle: tauri::AppHandle) {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    let today = chrono::Local::now().naive_local().date();
+
+    sqlx::query(
+        "INSERT OR IGNORE INTO chart (watchtime, updated_at) VALUES (0, date('now', 'localtime'))",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    // Then, increment the watchtime.
+    sqlx::query("UPDATE chart SET watchtime = watchtime + ? WHERE updated_at = ?")
+        .bind(watch_time)
+        .bind(today.to_string())
+        .execute(&pool)
+        .await
+        .unwrap();
 }
