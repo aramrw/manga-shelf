@@ -173,8 +173,7 @@ export default function Manga() {
       });
       setCurrentPanelIndex((prev) => prev + 2);
 
-      // then update the heatmap
-      invoke("update_heatmap_count", { count: 2 });
+      // then update the bar chart
     }
   };
 
@@ -186,7 +185,8 @@ export default function Manga() {
         zoomLevel: zoomLevel,
       });
       setCurrentPanelIndex((prev) => prev + 1);
-      invoke("update_heatmap_count", { count: 1 });
+
+      // then update the bar chart
     }
   };
 
