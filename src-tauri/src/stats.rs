@@ -82,23 +82,28 @@ async fn read_manga_folder_dirs(folder_path: &String, pool: SqlitePool) {
         "jpg", "jpeg", "png", "gif", "bmp", "ico", "tif", "tiff", "webp", "svg", "pdf",
     ];
 
-    let parent = std::fs::read_dir(folder_path).unwrap();
+    match std::fs::read_dir(folder_path) {
+        Ok(parent) => {
+            for file in parent {
+                let entry = file.unwrap();
+                let file_name = entry.file_name();
+                let file_path = entry.path();
 
-    for file in parent {
-        let entry = file.unwrap();
-        let file_name = entry.file_name();
-        let file_path = entry.path();
-
-        if file_path.is_dir() {
-            let path_str = file_path.to_str().unwrap().to_string();
-            Box::pin(read_manga_folder_dirs(&path_str, pool.clone())).await;
-        } else {
-            for format in &image_formats {
-                if file_name.to_str().unwrap().to_lowercase().contains(format) {
-                    let path_str = file_path.to_str().unwrap();
-                    insert_or_ignore_panel(path_str, pool.clone()).await;
+                if file_path.is_dir() {
+                    let path_str = file_path.to_str().unwrap().to_string();
+                    Box::pin(read_manga_folder_dirs(&path_str, pool.clone())).await;
+                } else {
+                    for format in &image_formats {
+                        if file_name.to_str().unwrap().to_lowercase().contains(format) {
+                            let path_str = file_path.to_str().unwrap();
+                            insert_or_ignore_panel(path_str, pool.clone()).await;
+                        }
+                    }
                 }
             }
+        }
+        Err(err) => {
+            eprintln!("Error Reading Dir: {} -> {}", folder_path, err);
         }
     }
 }
