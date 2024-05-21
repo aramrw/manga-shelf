@@ -35,7 +35,7 @@ export default function DailyTab() {
     ],
     datasets: [
       {
-        label: " Watchtime Per Day (H) ",
+        label: " Hours Read ",
         data: stats,
         backgroundColor: [
           "rgba(255, 99, 132, 0.2)",

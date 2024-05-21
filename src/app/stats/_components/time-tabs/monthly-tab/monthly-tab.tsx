@@ -41,7 +41,7 @@ export default function MonthlyTab() {
     ],
     datasets: [
       {
-        label: " Hours Watched ",
+        label: " Hours Read ",
         data: stats,
         backgroundColor: [
           "rgba(255, 99, 132, 0.2)",
