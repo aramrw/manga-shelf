@@ -70,7 +70,8 @@ const MangaHeader = ({
         handleSetFirstPanel();
       } else if (event.ctrlKey && event.key === "ArrowLeft") {
         handleSetLastPanel();
-      } // previous panels
+      }
+      // previous panels
       else if (event.shiftKey && event.key === "ArrowRight") {
         handlePreviousSinglePanel();
       } else if (event.key === "ArrowRight") {
@@ -79,7 +80,8 @@ const MangaHeader = ({
         } else {
           handlePreviousSinglePanel();
         }
-      } // next panels
+      }
+      // next panels
       else if (event.shiftKey && event.key === "ArrowLeft") {
         handleNextSinglePanel();
       } else if (event.key === "ArrowLeft") {
@@ -89,6 +91,10 @@ const MangaHeader = ({
           handleNextSinglePanel();
         }
       }
+			// double panels
+			else if (event.key === "p") {
+				handleSetDoublePanels();
+			}
 
       // handle zoom level
       if (event.ctrlKey && event.key === "=") {
@@ -186,5 +192,4 @@ const MangaHeader = ({
     </header>
   );
 };
-
 export default MangaHeader;
