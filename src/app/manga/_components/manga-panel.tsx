@@ -17,7 +17,7 @@ export default function MangaPanel({
   height: number;
 }) {
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center pt-6">
+    <div className="w-full h-full flex flex-col justify-center items-center pt-1">
       {currentPanel && currentPanel.name && (
         <>
           {secondPanel ? (
