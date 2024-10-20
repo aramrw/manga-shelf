@@ -2,7 +2,7 @@ use crate::manga::{get_panel_image_dimensions, split_path_parts, MangaFolder, Ma
 use chrono::Datelike;
 use chrono::{Local, NaiveDateTime};
 use serde::{Deserialize, Serialize};
-use sqlx::{Row, SqlitePool};
+use sqlx::SqlitePool;
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
 
@@ -34,43 +34,30 @@ pub async fn fetch_daily_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
 
     // fetch all manga folders created + updated today
     let query = "
-    SELECT * 
-    FROM manga_folder 
+    SELECT *
+    FROM manga_folder
     ORDER BY created_at DESC, updated_at DESC
 ";
 
     let mut daily_manga: Vec<MangaFolder> = Vec::new();
-    let rows = sqlx::query(query).fetch_all(&pool).await.unwrap();
+    let manga_folders: Vec<MangaFolder> = sqlx::query_as(query).fetch_all(&pool).await.unwrap();
 
-    for row in rows {
-        let current_manga = MangaFolder {
-            id: row.get("id"),
-            title: row.get("title"),
-            full_path: row.get("full_path"),
-            as_child: row.get("as_child"),
-            is_expanded: row.get("is_expanded"),
-            time_spent_reading: row.get("time_spent_reading"),
-            double_panels: row.get("double_panels"),
-            is_read: row.get("is_read"),
-            created_at: row.get("created_at"),
-            updated_at: row.get("updated_at"),
-        };
-
+    for folder in manga_folders {
         // parse created_at and updated_at from sqlite 'localtime'
 
         let updated_at =
-            NaiveDateTime::parse_from_str(&current_manga.updated_at, "%Y-%m-%d %H:%M:%S").unwrap();
+            NaiveDateTime::parse_from_str(&folder.updated_at, "%Y-%m-%d %H:%M:%S").unwrap();
         let created_at =
-            NaiveDateTime::parse_from_str(&current_manga.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
+            NaiveDateTime::parse_from_str(&folder.created_at, "%Y-%m-%d %H:%M:%S").unwrap();
 
         // check if created_at and updated_at are today
 
         let today = Local::now().naive_local().date();
 
         if updated_at.date() == today || created_at.date() == today {
-            daily_manga.push(current_manga);
+            daily_manga.push(folder);
         } else {
-            println!("Not today: {}", current_manga.title);
+            println!("Not today: {}", folder.title);
         }
     }
 
@@ -117,18 +104,18 @@ async fn insert_or_ignore_panel(path: &str, pool: SqlitePool) {
 
     sqlx::query(
         "INSERT OR IGNORE INTO manga_panel (
-    id, 
-    title, 
-    full_path, 
-    is_read, 
-    width, 
-    height, 
-    zoom_level, 
+    id,
+    title,
+    full_path,
+    is_read,
+    width,
+    height,
+    zoom_level,
     created_at,
     updated_at
     )
     VALUES (
-    ?, ?, ?, ?, ?, ?, ?, 
+    ?, ?, ?, ?, ?, ?, ?,
     datetime('now', 'localtime'),
     datetime('now', 'localtime'))",
     )
@@ -212,10 +199,10 @@ pub async fn update_global_stats(handle: AppHandle) -> Stats {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
     let mut is_stale: bool = false;
 
-    let old_stats: Stats = match sqlx::query_as("SELECT * FROM stats").fetch_one(&pool).await {
-        Ok(stats) => stats,
-        Err(_) => Stats::default(),
-    };
+    let old_stats: Stats = sqlx::query_as("SELECT * FROM stats")
+        .fetch_one(&pool)
+        .await
+        .unwrap_or_default();
 
     let mut new_stats = create_global_stats(&pool).await;
 
@@ -245,13 +232,13 @@ pub async fn update_global_stats(handle: AppHandle) -> Stats {
 
     if is_stale {
         sqlx::query(
-            "INSERT OR REPLACE INTO stats 
+            "INSERT OR REPLACE INTO stats
         (
         id,
-        total_manga, 
-        total_panels, 
-        total_panels_read, 
-        total_panels_remaining, 
+        total_manga,
+        total_panels,
+        total_panels_read,
+        total_panels_remaining,
         total_time_spent_reading
         )
         VALUES (
