@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { FileEntry } from "@tauri-apps/api/fs";
-import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import Image from "next/image";
+import { FileEntry } from "../page";
 
 export default function MangaPanel({
   currentPanel,
@@ -21,13 +21,9 @@ export default function MangaPanel({
       {currentPanel && currentPanel.name && (
         <>
           {secondPanel ? (
-            <h2 className="font-bold fixed left-2 bottom-1 text-xs text-zinc-300 pointer-events-none">
-              {currentPanel.name}
-            </h2>
+            <h2 className="font-bold fixed left-2 bottom-1 text-xs text-zinc-300 pointer-events-none">{currentPanel.name}</h2>
           ) : (
-            <h2 className="font-bold fixed right-2 bottom-1 text-xs text-zinc-300 pointer-events-none">
-              {currentPanel.name}
-            </h2>
+            <h2 className="font-bold fixed right-2 bottom-1 text-xs text-zinc-300 pointer-events-none">{currentPanel.name}</h2>
           )}
           <div
             id="IMAGE-DIV"
