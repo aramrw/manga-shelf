@@ -15,7 +15,10 @@ pub fn create_database(path: &str, handle: AppHandle) {
 
             migrate_parent_folder_table(&sqlite_pool).await.unwrap();
             migrate_manga_folder_table(&sqlite_pool).await.unwrap();
-            migrate_global_table(&sqlite_pool).await.unwrap();
+            migrate_global_manga_table(&sqlite_pool).await.unwrap();
+            migrate_global_parent_folder_table(&sqlite_pool)
+                .await
+                .unwrap();
             migrate_manga_panel_table(&sqlite_pool).await.unwrap();
             migrate_stats_table(&sqlite_pool).await.unwrap();
             migrate_chart_table(&sqlite_pool).await.unwrap();
@@ -35,6 +38,7 @@ pub async fn migrate_parent_folder_table(sqlite_pool: &SqlitePool) -> Result<(),
             full_path TEXT NOT NULL,
             as_child BOOLEAN DEFAULT 0,
             is_expanded BOOLEAN DEFAULT 0,
+            cover_panel_path TEXT,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
@@ -46,6 +50,7 @@ pub async fn migrate_parent_folder_table(sqlite_pool: &SqlitePool) -> Result<(),
     Ok(())
 }
 
+// !!! When updating this table you must update the global table as well !!!
 pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS manga_folder
@@ -58,6 +63,7 @@ pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), 
             time_spent_reading INTEGER DEFAULT 0,
             double_panels BOOLEAN DEFAULT 0,
             is_read BOOLEAN DEFAULT 0,
+            cover_panel_path TEXT,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
@@ -69,7 +75,7 @@ pub async fn migrate_manga_folder_table(sqlite_pool: &SqlitePool) -> Result<(), 
     Ok(())
 }
 
-pub async fn migrate_global_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
+pub async fn migrate_global_manga_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS global_manga
         (
@@ -81,6 +87,30 @@ pub async fn migrate_global_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
             time_spent_reading INTEGER DEFAULT 0,
             double_panels BOOLEAN DEFAULT 0,
             is_read BOOLEAN DEFAULT 0,
+            cover_panel_path TEXT,
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(full_path)
+        )",
+    )
+    .execute(sqlite_pool)
+    .await?;
+
+    Ok(())
+}
+
+pub async fn migrate_global_parent_folder_table(
+    sqlite_pool: &SqlitePool,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS global_parent
+        (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            full_path TEXT NOT NULL,
+            as_child BOOLEAN DEFAULT 0,
+            is_expanded BOOLEAN DEFAULT 0,
+            cover_panel_path TEXT,
             created_at TEXT,
             updated_at TEXT,
             UNIQUE(full_path)
@@ -94,7 +124,7 @@ pub async fn migrate_global_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::
 
 pub async fn migrate_manga_panel_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS manga_panel 
+        "CREATE TABLE IF NOT EXISTS manga_panel
         (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
@@ -116,7 +146,7 @@ pub async fn migrate_manga_panel_table(sqlite_pool: &SqlitePool) -> Result<(), s
 
 pub async fn migrate_stats_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS stats 
+        "CREATE TABLE IF NOT EXISTS stats
         (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             total_manga INTEGER DEFAULT 0,
@@ -132,7 +162,6 @@ pub async fn migrate_stats_table(sqlite_pool: &SqlitePool) -> Result<(), sqlx::E
     Ok(())
 }
 
-
 pub async fn migrate_chart_table(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
         "CREATE TABLE IF NOT EXISTS chart (
@@ -147,4 +176,3 @@ pub async fn migrate_chart_table(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 
     Ok(())
 }
-
