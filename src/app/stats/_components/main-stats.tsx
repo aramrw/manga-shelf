@@ -1,7 +1,7 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Folder, Timer, Video } from "lucide-react";
 import { ClockIcon, EyeIcon, EyeSlashIcon, FolderIcon, VideoCameraIcon } from "@heroicons/react/16/solid";
