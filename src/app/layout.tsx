@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Zen_Kaku_Gothic_Antique } from "next/font/google";
 import "./globals.css";
 import NavBar from "./_components/nav/nav-bar";
 
 const inter = Inter({ subsets: ["latin"] });
+//const zen = Zen_Kaku_Gothic_Antique({ subsets: ["latin"], weight: ["400"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
