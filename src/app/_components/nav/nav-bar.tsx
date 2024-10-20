@@ -5,7 +5,7 @@ import { ArrowLeftStartOnRectangleIcon } from "@heroicons/react/16/solid";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/tauri";
+import { invoke } from "@tauri-apps/api/core";
 import { MangaFolderType } from "@/app/dashboard/page";
 
 export default function NavBar() {
