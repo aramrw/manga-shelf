@@ -1,7 +1,11 @@
+use std::{fs::read_dir, io, path::PathBuf};
+
 use serde::{Deserialize, Serialize};
-use sqlx::{Row, SqlitePool};
+use sqlx::SqlitePool;
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
+
+use crate::misc::NUMBER_REGEX;
 
 #[derive(Debug, Serialize, Deserialize, Default, sqlx::FromRow)]
 pub struct ParentFolder {
@@ -10,6 +14,7 @@ pub struct ParentFolder {
     pub full_path: String,
     pub as_child: bool,
     pub is_expanded: bool,
+    pub cover_panel_path: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -24,6 +29,7 @@ pub struct MangaFolder {
     pub time_spent_reading: u32,
     pub double_panels: bool,
     pub is_read: bool,
+    pub cover_panel_path: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -65,6 +71,8 @@ pub async fn update_parent_folders(
         let uuid = uuid::Uuid::new_v4().to_string();
         // gets the parent, file name, and extension of the path
         let split_path = split_path_parts(&path);
+        let cover_panel_path = get_parent_folder_cover_panel_path(&path).unwrap_or_default();
+        //println!("{cover_panel_path}");
 
         // create a ParentFolder struct to push into the parent_folders vector
         let folder = ParentFolder {
@@ -73,6 +81,7 @@ pub async fn update_parent_folders(
             full_path: path.clone(),
             as_child,
             is_expanded,
+            cover_panel_path: Some(cover_panel_path.clone()),
             created_at: "".to_string(),
             updated_at: "".to_string(),
         };
@@ -80,19 +89,20 @@ pub async fn update_parent_folders(
         parent_folders.push(folder);
 
         sqlx::query(
-            "INSERT INTO parent_folder 
+            "INSERT INTO parent_folder
         (
-            id, 
-            title, 
-            full_path, 
+            id,
+            title,
+            full_path,
             as_child,
             is_expanded,
-            created_at, 
+            cover_panel_path,
+            created_at,
             updated_at
-        ) 
+        )
         VALUES
         (
-            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?,
             datetime('now', 'localtime'), datetime('now', 'localtime')
         )
         ON CONFLICT (full_path) DO UPDATE SET
@@ -105,6 +115,7 @@ pub async fn update_parent_folders(
         .bind(path)
         .bind(as_child)
         .bind(is_expanded)
+        .bind(cover_panel_path)
         .execute(&pool)
         .await
         .unwrap();
@@ -118,28 +129,12 @@ pub async fn update_parent_folders(
 pub async fn get_parent_folders(handle: AppHandle) -> Vec<ParentFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
-    let mut parent_folders: Vec<ParentFolder> = Vec::new();
-    let result = sqlx::query("SELECT * FROM parent_folder")
+    let mut parent_folders: Vec<ParentFolder> = sqlx::query_as("SELECT * FROM parent_folder")
         .fetch_all(&pool)
         .await
         .unwrap();
 
-    for row in result {
-        let parent_folder = ParentFolder {
-            id: row.get("id"),
-            title: row.get("title"),
-            full_path: row.get("full_path"),
-            as_child: row.get("as_child"),
-            is_expanded: row.get("is_expanded"),
-            created_at: row.get("created_at"),
-            updated_at: row.get("updated_at"),
-        };
-
-        parent_folders.push(parent_folder);
-    }
-
     parent_folders.retain(|folder| !folder.as_child);
-
     // return the parent_folders vector back to the frontend
     parent_folders
 }
@@ -161,22 +156,24 @@ pub async fn update_manga_folders(
         let uuid = uuid::Uuid::new_v4().to_string();
         // gets the parent, file name, and extension of the path
         let split_path = split_path_parts(&path);
-        
+        let cover_panel_path = get_manga_folder_cover_panel_path(&path).unwrap_or_default();
+
         sqlx::query(
-            "INSERT INTO manga_folder 
+            "INSERT INTO manga_folder
         (
-            id, 
-            title, 
-            full_path, 
+            id,
+            title,
+            full_path,
             as_child,
             is_expanded,
             time_spent_reading,
-            created_at, 
+            cover_panel_path,
+            created_at,
             updated_at
-        ) 
+        )
         VALUES
         (
-            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?,
             datetime('now', 'localtime'), datetime('now', 'localtime')
         )
         ON CONFLICT (full_path) DO UPDATE SET
@@ -191,6 +188,7 @@ pub async fn update_manga_folders(
         .bind(as_child)
         .bind(is_expanded)
         .bind(0)
+        .bind(cover_panel_path)
         .execute(&pool)
         .await
         .unwrap();
@@ -208,32 +206,83 @@ pub async fn update_manga_folders(
     manga_folders
 }
 
+pub fn get_parent_folder_cover_panel_path(parent_path: &str) -> Result<String, io::Error> {
+    for entry in read_dir(parent_path)? {
+        let entry = entry?;
+        let entry_path = entry.path();
+
+        if entry_path.is_dir() {
+            // First, try to get a cover panel from this subdirectory
+            match get_manga_folder_cover_panel_path(&entry_path.to_string_lossy()) {
+                Ok(cover_panel_path) => return Ok(cover_panel_path),
+                Err(e) => match e.kind() {
+                    // If it's a NotFound error, continue searching other subdirectories
+                    io::ErrorKind::NotFound => {
+                        // Recursively check subdirectories of this directory
+                        match get_parent_folder_cover_panel_path(&entry_path.to_string_lossy()) {
+                            Ok(panel_path) => return Ok(panel_path),
+                            Err(inner_err) => match inner_err.kind() {
+                                io::ErrorKind::NotFound => {} // Keep searching other directories
+                                _ => return Err(inner_err),   // Propagate any other error
+                            },
+                        }
+                    }
+                    _ => return Err(e), // Propagate any other error
+                },
+            }
+        }
+    }
+
+    // If no valid image is found in this directory or its subdirectories
+    Err(io::Error::new(
+        io::ErrorKind::NotFound,
+        "No valid cover panel image found in any subdirectories",
+    ))
+}
+
+pub fn get_manga_folder_cover_panel_path(folder_path: &str) -> Result<String, io::Error> {
+    let file_types = ["jpg", "jpeg", "png", "webp"];
+    let mut manga_panel_paths: Vec<PathBuf> = Vec::new();
+
+    // Collect valid image file paths as PathBuf
+    for entry in read_dir(folder_path)? {
+        let entry = entry?;
+        let entry_path = entry.path();
+
+        if let Some(ext) = entry_path.extension() {
+            if let Some(ext_str) = ext.to_str() {
+                if file_types.contains(&ext_str) {
+                    manga_panel_paths.push(entry_path);
+                }
+            }
+        }
+    }
+
+    // Sort the paths by the numbers extracted from the file names
+    manga_panel_paths.sort_by_key(|path| {
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .and_then(|name_str| NUMBER_REGEX.captures(name_str))
+            .and_then(|cap| cap.get(1))
+            .and_then(|num| num.as_str().parse::<u32>().ok())
+            .unwrap_or(0) // Default to 0 if no match or parse error
+    });
+
+    // Return the first panel if available
+    manga_panel_paths
+        .first()
+        .map(|path| path.to_string_lossy().into_owned())
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "No valid cover panel image found"))
+}
+
 #[tauri::command]
 pub async fn get_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
-    let mut manga_folders: Vec<MangaFolder> = Vec::new();
-    let result = sqlx::query("SELECT * FROM manga_folder")
+    let mut manga_folders: Vec<MangaFolder> = sqlx::query_as("SELECT * FROM manga_folder")
         .fetch_all(&pool)
         .await
         .unwrap();
-
-    for row in result {
-        let manga_folder = MangaFolder {
-            id: row.get("id"),
-            title: row.get("title"),
-            full_path: row.get("full_path"),
-            as_child: row.get("as_child"),
-            is_expanded: row.get("is_expanded"),
-            time_spent_reading: row.get("time_spent_reading"),
-            double_panels: row.get("double_panels"),
-            is_read: row.get("is_read"),
-            created_at: row.get("created_at"),
-            updated_at: row.get("updated_at"),
-        };
-
-        manga_folders.push(manga_folder);
-    }
 
     manga_folders.retain(|folder| !folder.as_child);
 
@@ -271,18 +320,18 @@ pub async fn update_manga_panel(
         // });
 
         sqlx::query(
-            "INSERT INTO manga_panel  
+            "INSERT INTO manga_panel
         (
-            id, 
-            title, 
-            full_path, 
+            id,
+            title,
+            full_path,
             is_read,
             width,
             height,
             zoom_level,
-            created_at, 
+            created_at,
             updated_at
-        ) 
+        )
         VALUES
         (
             ?, ?, ?, ?, ?, ?, ?,
@@ -322,7 +371,7 @@ pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
 
     if path.is_empty() {
-        return Err("Path is empty".to_string());
+        return Err("`path` is empty #cmd(get_manga_panel)[manga.rs]".to_string());
     }
 
     let panel: MangaPanel = match sqlx::query_as("SELECT * FROM manga_panel WHERE full_path = ?")
@@ -331,8 +380,10 @@ pub async fn get_manga_panel(path: &str, handle: AppHandle) -> Result<MangaPanel
         .await
     {
         Ok(panel) => panel,
-        Err(_) => {
-            return Err("Panel not found".to_string());
+        Err(e) => {
+            return Err(format!(
+                "Error occured querying for Panel `{path}` #cmd(get_manga_panel)[manga.rs]\n{e}"
+            ));
         }
     };
 
