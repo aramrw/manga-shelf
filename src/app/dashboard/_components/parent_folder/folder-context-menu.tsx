@@ -9,15 +9,12 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { MangaFolderType, ParentFolderType } from "../../page";
-import {
-  BackspaceIcon,
-  EyeIcon,
-  FireIcon,
-  FolderIcon,
-} from "@heroicons/react/16/solid";
-import { invoke } from "@tauri-apps/api/tauri";
+import { BackspaceIcon, BookOpenIcon, EyeIcon, EyeSlashIcon, FireIcon, FolderIcon } from "@heroicons/react/16/solid";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import ParentFolder from "./parent-folder";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { BookCheckIcon } from "lucide-react";
 
 export default function FolderContextMenu({
   folder,
@@ -51,12 +48,14 @@ export default function FolderContextMenu({
     <ContextMenu>
       <ContextMenuTrigger className="h-fit w-full">
         {isMangaFolder && handleMangaClick ? (
-          <ul
+          <div
             className={cn(
-              "h-fit w-full p-1 bg-muted-foreground flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-sm transition-transform duration-100 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-muted-foreground ring-opacity-50 font-bold",
+              "h-[150px] w-full max-w-32 bg-primary p-1 flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-md transition-transform duration-100 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-muted-foreground ring-opacity-50 font-bold",
               asChild &&
-              "p-0 bg-none font-semibold text-xs rounded-none bg-primary hover:opacity-80",
-              !asChild && "hover:scale-[1.005] ",
+                "p-0 border-primary border-2 bg-none font-semibold text-xs rounded-sm bg-primary transition hover:translate-y-[1px] will-change-transform",
+              !asChild && "hover:scale-[1.005]",
+              "relative", // Keep the div relative for positioning
+              !(folder as MangaFolderType).is_read && "brightness-50",
             )}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -66,64 +65,98 @@ export default function FolderContextMenu({
             onClick={() => handleMangaClick(folder.full_path)}
             tabIndex={0}
           >
-            <li
-              className={cn(
-                "p-1 mb-0.5 w-full h-full flex flex-col justify-center items-center bg-muted brightness-105",
-                "is_read" in folder && folder.is_read && "brightness-90",
-              )}
-            >
-              {"is_read" in folder && folder.is_read ? (
-                <h1 className="flex flex-row justify-center items-center w-full overflow-hidden text-nowrap gap-1">
-                  <EyeIcon className="w-4 h-auto" />
-                  {folder.title}
-                </h1>
-              ) : (
-                <h1 className="w-full overflow-hidden text-nowrap">
-                  {folder.title}
-                </h1>
-              )}
-            </li>
-          </ul>
+            <style jsx>{`
+              div::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: url(${convertFileSrc(folder.cover_panel_path)});
+                filter: blur(5px); /* Adjust the blur radius as needed */
+                z-index: 0; /* Place it behind the image */
+                background-size: cover;
+                background-position: center;
+              }
+            `}</style>
+
+            <Image
+              alt={folder.title}
+              className="object-cover w-full h-full relative z-10" // Ensure image stays on top
+              src={convertFileSrc(folder.cover_panel_path)}
+              priority
+              width={500}
+              height={500}
+            />
+          </div>
         ) : (
+          //This is the outermost folder. AKA it cannot be a child
           <ParentFolder key={folder.id} parentFolder={folder} />
         )}
       </ContextMenuTrigger>
-      <ContextMenuContent className="font-semibold">
-        <ContextMenuItem
-          className="flex flex-row items-center gap-0.5 cursor-pointer"
-          onClick={() => handleInvokeShowInFolder(folder.full_path)}
-        >
-          <span>Show In Explorer</span>
-          <FolderIcon className="h-4 w-auto" />
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuSub>
-          <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
-            <span>Delete</span>
-            <BackspaceIcon className="h-4 w-auto" />
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="ml-1">
-            <ContextMenuItem
-              className="flex flex-row items-center gap-0.5 cursor-pointer"
-              onClick={() =>
-                invokeDeleteFolder(folder.id, folder.full_path, false)
-              }
-            >
-              <span>Folder Only</span>
-              <FolderIcon className="h-4 w-auto" />
-            </ContextMenuItem>
-            <ContextMenuItem
-              className="flex flex-row items-center gap-0.5 cursor-pointer"
-              onClick={() =>
-                invokeDeleteFolder(folder.id, folder.full_path, true)
-              }
-            >
-              <span>Include Panel Data</span>
-              <FireIcon className="h-4 w-auto" />
-            </ContextMenuItem>
-          </ContextMenuSubContent>
-        </ContextMenuSub>
-      </ContextMenuContent>
+      {!asChild && (
+        <ContextMenuContent className="font-semibold">
+          <ContextMenuItem className="flex flex-row items-center gap-0.5 cursor-pointer" onClick={() => handleInvokeShowInFolder(folder.full_path)}>
+            <span>Show In Explorer</span>
+            <FolderIcon className="h-4 w-auto" />
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          {isMangaFolder && (
+            <>
+              <ContextMenuSub>
+                <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
+                  <span>Read</span>
+                  <BookOpenIcon className="h-4 w-auto" />
+                </ContextMenuSubTrigger>
+                <ContextMenuSubContent className="ml-1">
+                  <ContextMenuItem
+                    className="flex flex-row items-center gap-0.5 cursor-pointer"
+                    onClick={() => {
+                      invoke("set_folder_read", { path: folder.full_path }).then((_) => {});
+                    }}
+                  >
+                    <span>Set as Read</span>
+                    <EyeIcon className="h-4 w-auto" />
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    className="flex flex-row items-center gap-0.5 cursor-pointer"
+                    onClick={() => {
+                      invoke("set_folder_unread", { path: folder.full_path });
+                    }}
+                  >
+                    <span>Set as Unread</span>
+                    <EyeSlashIcon className="h-4 w-auto" />
+                  </ContextMenuItem>
+                </ContextMenuSubContent>
+              </ContextMenuSub>
+              <ContextMenuSeparator />
+            </>
+          )}
+          <ContextMenuSub>
+            <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
+              <span>Delete</span>
+              <BackspaceIcon className="h-4 w-auto" />
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="ml-1">
+              <ContextMenuItem
+                className="flex flex-row items-center gap-0.5 cursor-pointer"
+                onClick={() => invokeDeleteFolder(folder.id, folder.full_path, false)}
+              >
+                <span>Folder Only</span>
+                <FolderIcon className="h-4 w-auto" />
+              </ContextMenuItem>
+              <ContextMenuItem
+                className="flex flex-row items-center gap-0.5 cursor-pointer"
+                onClick={() => invokeDeleteFolder(folder.id, folder.full_path, true)}
+              >
+                <span>Include Panel Data</span>
+                <FireIcon className="h-4 w-auto" />
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        </ContextMenuContent>
+      )}
     </ContextMenu>
   );
 }
