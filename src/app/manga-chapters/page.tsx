@@ -7,6 +7,12 @@ import { readDir } from "@tauri-apps/plugin-fs";
 import FolderContextMenu from "../dashboard/_components/parent_folder/folder-context-menu";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { join } from "@tauri-apps/api/path";
+import { Button } from "@/components/ui/button";
+import HeroEyeIcon from "../_components/icons/hero-eye-icon";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { calculateTimeSpentWatching } from "../stats/_components/main-stats";
+import { MangaPanelType } from "../manga/page";
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
 
@@ -17,6 +23,8 @@ export default function MangaChapters() {
   const [parentFolders, setParentFolders] = useState<ParentFolderType[]>([]);
   // these only hold manga image panels
   const [mangaFolders, setMangaFolders] = useState<MangaFolderType[]>([]);
+  const [lastReadMangaFolder, setLastReadMangaFolder] = useState<MangaFolderType>();
+  const [lastReadMangaPanel, setLastReadMangaPanel] = useState<MangaPanelType>();
 
   const invokeAddFolders = useCallback((parentDirs: string[], mangaDirs: string[]) => {
     invoke("update_parent_folders", {
@@ -50,7 +58,7 @@ export default function MangaChapters() {
       const dirEntries = await readDir(dir);
 
       for (const entry of dirEntries) {
-        let entryPath = `${dir}\\${entry.name}`;
+        let entryPath = await join(dir, entry.name);
         if (entry.isDirectory) {
           const subEntries = await readDir(entryPath);
           let firstSubEntry = subEntries[0];
@@ -94,6 +102,7 @@ export default function MangaChapters() {
     });
   };
 
+  // First useEffect to begin the page rendering
   useEffect(() => {
     fetchGlobalParent().then((manga: unknown) => {
       if (manga) {
@@ -103,11 +112,35 @@ export default function MangaChapters() {
     });
   }, []);
 
+  // Second useEffect to populate the folderes
   useEffect(() => {
     if (mainParentFolder) {
       readDirSort(mainParentFolder.full_path);
     }
   }, [mainParentFolder, readDirSort]);
+
+  useEffect(() => {
+    if (mangaFolders && parentFolders) {
+      let paths: string[] = [];
+
+      for (const f of mangaFolders) {
+        paths.push(f.full_path);
+      }
+      for (const f of parentFolders) {
+        paths.push(f.full_path);
+      }
+
+      invoke("find_last_read_manga_folder", { paths }).then((res: unknown) => {
+        if (res) {
+          const tuple = res as [MangaFolderType, MangaPanelType];
+          const folder = tuple[0];
+          const panel = tuple[1];
+          setLastReadMangaFolder(folder);
+          setLastReadMangaPanel(panel);
+        }
+      });
+    }
+  }, [mangaFolders, parentFolders]);
 
   return (
     <main className="w-full h-[90vh] relative">
@@ -118,11 +151,11 @@ export default function MangaChapters() {
               <div
                 className="absolute inset-0 z-0"
                 style={{
-                  backgroundImage: `url(${convertFileSrc(mainParentFolder?.cover_panel_path!)})`,
+                  backgroundImage: `linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)),url(${convertFileSrc(mainParentFolder?.cover_panel_path!)})`,
                   backgroundSize: "cover",
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "center",
-                  filter: "blur(3px)",
+                  filter: "blur(6px)",
                 }}
               />
               <h1 className="bg-muted w-fit font-semibold z-10 relative text-medium md:text-xl lg:text-2xl shadow-2xl rounded-sm px-0.5 border-primary border-2 mb-1">
@@ -132,14 +165,54 @@ export default function MangaChapters() {
                 {mainParentFolder?.updated_at}
               </h2>
               {mainParentFolder?.cover_panel_path && mainParentFolder.title && (
-                <Image
-                  alt={mainParentFolder?.title}
-                  src={convertFileSrc(mainParentFolder?.cover_panel_path!)}
-                  className=" relative h-[175px] md:h-[200px] lg:h-[240px] w-auto z-100 rounded-sm border-primary border-2 shadow-lg"
-                  width={500}
-                  height={500}
-                  priority
-                />
+                <div className="flex flex-row justify-start items-start gap-2">
+                  <Image
+                    alt={mainParentFolder?.title}
+                    src={convertFileSrc(mainParentFolder?.cover_panel_path!)}
+                    className=" relative h-[175px] md:h-[200px] lg:h-[240px] w-auto z-100 rounded-sm border-primary border-2 shadow-lg"
+                    width={500}
+                    height={500}
+                    priority
+                  />
+                  {lastReadMangaFolder && lastReadMangaPanel && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <div
+                            className="rounded-sm font-semibold mt-[1.5px] relative gap-0.5 flex flex-row justify-center items-center bg-muted text-primary hover:-translate-y-1 hover:bg-muted transition-all outline py-0.5 px-1"
+                            onClick={() => handleMangaClick(lastReadMangaFolder?.full_path)}
+                          >
+                            <span>Last Read</span>
+                            <HeroEyeIcon />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          align="start"
+                          className="relative gap-1 flex flex-col justify-center items-start bg-accent text-primary font-semibold rounded-sm outline"
+                        >
+                          <p className="">{lastReadMangaFolder.title}</p>
+                          <span className="absolute bg-primary w-full h-0.5 top-[22px]"></span>
+                          <div className="w-fit flex flex-row gap-1">
+                            <div className="w-full gap-1 flex flex-col items-start">
+                              <p className="h-fit w-fit bg-muted shadow-md px-1 rounded-sm">
+                                TSR ({calculateTimeSpentWatching(lastReadMangaFolder.time_spent_reading)})
+                              </p>
+                              <p className="h-fit w-fit bg-muted shadow-md px-1 rounded-sm">{lastReadMangaFolder.updated_at}</p>
+                            </div>
+                            <Image
+                              className="w-fit h-full max-h-20 shadow-md rounded-sm"
+                              src={convertFileSrc(lastReadMangaPanel?.full_path)}
+                              alt={`lrmp${lastReadMangaFolder.title}`}
+                              width={500}
+                              height={500}
+                            />
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               )}
             </header>
             <section className="p-0.5 bg-accent shadow-md flex flex-col gap-2">
@@ -149,7 +222,7 @@ export default function MangaChapters() {
               </div>
             </section>
             <section className="p-2">
-              <ul className="w-fit flex flex-row gap-2">
+              <ul className="px-3 py-1 w-full grid grid-cols-3 gap-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 2xl:grid-cols-10">
                 {mangaFolders.map((folder, index) => (
                   <FolderContextMenu
                     key={`manga${index}`}
@@ -185,7 +258,7 @@ export default function MangaChapters() {
             </section>
           </>
         ) : (
-          <span>loading</span>
+          <span></span>
         )}
       </>
     </main>
