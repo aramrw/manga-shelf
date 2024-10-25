@@ -13,6 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import FolderContextMenu from "./folder-context-menu";
 import Image from "next/image";
 import { MangaPanelType } from "@/app/manga/page";
+import { join } from "@tauri-apps/api/path";
 
 const fileTypes = ["jpg", "jpeg", "png", "gif", "webp"];
 
@@ -57,7 +58,7 @@ export default function ParentFolder({ parentFolder }: { parentFolder: ParentFol
       const dirEntries = await readDir(dir);
 
       const folderPromises = dirEntries.map(async (entry) => {
-        let entryPath = `${dir}\\${entry.name}`;
+        let entryPath = await join(dir, entry.name);
         if (entry.isDirectory) {
           const subEntries = await readDir(entryPath);
           let firstSubEntry = subEntries[0];
@@ -125,8 +126,10 @@ export default function ParentFolder({ parentFolder }: { parentFolder: ParentFol
         onClick={() => {
           invoke("set_global_parent_folder", { fullPath: parentFolder.full_path }).then(() => {
             if (pathname === "/manga-chapters") {
+              window.location.reload();
+            } else {
+              router.push("/manga-chapters");
             }
-            router.push("/manga-chapters");
           });
         }}
         style={{ position: "relative" }} // Position relative to apply pseudo-element background
