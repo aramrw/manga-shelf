@@ -1,7 +1,11 @@
-use std::{fs::read_dir, io, path::PathBuf};
+use std::{
+    fs::read_dir,
+    io,
+    path::{Path, PathBuf},
+};
 
 use serde::{Deserialize, Serialize};
-use sqlx::SqlitePool;
+use sqlx::{query_as, SqlitePool};
 use tauri::{AppHandle, Manager};
 use tokio::sync::Mutex;
 
@@ -106,8 +110,7 @@ pub async fn update_parent_folders(
             datetime('now', 'localtime'), datetime('now', 'localtime')
         )
         ON CONFLICT (full_path) DO UPDATE SET
-        is_expanded = excluded.is_expanded,
-        updated_at = datetime('now', 'localtime')
+        is_expanded = excluded.is_expanded
         ",
         )
         .bind(uuid)
@@ -178,8 +181,7 @@ pub async fn update_manga_folders(
         )
         ON CONFLICT (full_path) DO UPDATE SET
         as_child = excluded.as_child,
-        is_expanded = excluded.is_expanded,
-        updated_at = datetime('now', 'localtime')
+        is_expanded = excluded.is_expanded
         ",
         )
         .bind(uuid)
@@ -292,32 +294,19 @@ pub async fn get_manga_folders(handle: AppHandle) -> Vec<MangaFolder> {
 
 #[tauri::command]
 pub async fn update_manga_panel(
-    dir_paths: String,
+    dir_paths: Vec<String>,
     handle: AppHandle,
     is_read: bool,
     zoom_level: u16,
 ) {
     let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
-    //let mut manga_panels: Vec<MangaPanel> = Vec::new();
 
-    for path in serde_json::from_str::<Vec<String>>(&dir_paths).unwrap() {
+    for path in &dir_paths {
         let uuid = uuid::Uuid::new_v4().to_string();
         // gets the parent, file name, and extension of the path
-        let split_path = split_path_parts(&path);
+        let split_path = split_path_parts(path);
         // get the width and height of the panel image
-        let (width, height) = get_panel_image_dimensions(&path);
-
-        // create a MangaFolder struct to push into the panels vector
-        // manga_panels.push(MangaPanel {
-        //     id: uuid.clone(),
-        //     title: split_path.file_name.clone(),
-        //     full_path: path.clone(),
-        //     is_read,
-        //     width,
-        //     height,
-        //     created_at: "".to_string(),
-        //     updated_at: "".to_string(),
-        // });
+        let (width, height) = get_panel_image_dimensions(path);
 
         sqlx::query(
             "INSERT INTO manga_panel
@@ -343,7 +332,7 @@ pub async fn update_manga_panel(
         )
         .bind(uuid)
         .bind(split_path.file_name)
-        .bind(&path)
+        .bind(path)
         .bind(is_read)
         .bind(width)
         .bind(height)
@@ -354,7 +343,6 @@ pub async fn update_manga_panel(
     }
 
     // update every panel to match the same zoom level
-
     if zoom_level > 0 {
         sqlx::query("UPDATE manga_panel SET zoom_level = ?")
             .bind(zoom_level)
@@ -363,7 +351,17 @@ pub async fn update_manga_panel(
             .unwrap();
     }
 
-    //manga_panels
+    if let Some(manga_folder_path) = dir_paths.first() {
+        if let Some(parent) = Path::new(manga_folder_path).parent() {
+            // update the main manga folder's updated_at
+            sqlx::query(
+                "UPDATE manga_folder SET updated_at = DATETIME('now', 'localtime') WHERE full_path = ?",
+            ).bind(parent.to_string_lossy().to_string())
+            .execute(&pool)
+            .await
+            .unwrap();
+        }
+    }
 }
 
 #[tauri::command]
@@ -536,6 +534,36 @@ pub async fn find_last_read_panel(handle: AppHandle, chapter_path: String) -> us
     //println!("last panel: {:?} at index {}", panels[last].title, last);
 
     last
+}
+
+#[tauri::command]
+pub async fn find_last_read_manga_folder(
+    handle: AppHandle,
+    paths: Vec<String>,
+) -> Option<(MangaFolder, MangaPanel)> {
+    let pool = handle.state::<Mutex<SqlitePool>>().lock().await.clone();
+    let folders: Vec<MangaFolder> = query_as("SELECT * FROM manga_folder ORDER BY updated_at DESC")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    //println!("{:#?}", folders);
+
+    for folder in folders {
+        if paths.contains(&folder.full_path) {
+            //println!("last read manga folder: {}", folder.full_path);
+            let last_read_panel: MangaPanel = sqlx::query_as(
+                "SELECT * FROM manga_panel WHERE full_path LIKE ? || '%' ORDER BY updated_at DESC",
+            )
+            .bind(&folder.full_path)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            return Some((folder, last_read_panel));
+        }
+    }
+
+    None
 }
 
 #[tauri::command]
