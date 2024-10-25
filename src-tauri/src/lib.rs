@@ -44,6 +44,7 @@ pub fn run() {
             manga::update_folder_double_panels,
             manga::set_folder_read,
             manga::set_folder_unread,
+            manga::find_last_read_manga_folder,
             global::set_global_manga_folder,
             global::set_global_parent_folder,
             global::get_global_manga,
