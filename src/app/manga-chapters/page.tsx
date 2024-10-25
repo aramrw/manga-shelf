@@ -201,7 +201,7 @@ export default function MangaChapters() {
                               <p className="h-fit w-fit bg-muted shadow-md px-1 rounded-sm">{lastReadMangaFolder.updated_at}</p>
                             </div>
                             <Image
-                              className="w-fit h-full max-h-20 shadow-md rounded-sm"
+                              className="w-fit h-20 shadow-md rounded-sm"
                               src={convertFileSrc(lastReadMangaPanel?.full_path)}
                               alt={`lrmp${lastReadMangaFolder.title}`}
                               width={500}
