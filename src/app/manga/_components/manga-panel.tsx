@@ -9,15 +9,17 @@ export default function MangaPanel({
   zoomLevel,
   width,
   height,
+  isDoublePanels,
 }: {
   currentPanel: FileEntry;
   secondPanel: boolean;
   zoomLevel: number;
   width: number;
   height: number;
+  isDoublePanels?: boolean;
 }) {
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center pt-1">
+    <div className={cn("w-full h-full flex flex-col justify-center items-center pt-1", !isDoublePanels && secondPanel && "hidden")}>
       {currentPanel && currentPanel.name && (
         <>
           {secondPanel ? (
@@ -40,7 +42,7 @@ export default function MangaPanel({
               quality={100}
               priority={true}
               className={cn(
-                "w-full h-full pointer-events-none",
+                "w-fit h-full pointer-events-none",
                 !secondPanel && "shadow-[10px_0_20px_-10px_rgba(0,0,0,0.45)]",
                 secondPanel && "shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.45)]",
               )}
