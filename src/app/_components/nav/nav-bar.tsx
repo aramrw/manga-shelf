@@ -12,8 +12,7 @@ export default function NavBar() {
   const router = useRouter();
   const pathname = usePathname();
   const [startTime, setStartTime] = useState<number>(0);
-  const [wasPreviousPathManga, setWasPreviousPathManga] =
-    useState<boolean>(false);
+  const [wasPreviousPathManga, setWasPreviousPathManga] = useState<boolean>(false);
 
   useEffect(() => {
     if (pathname == "/") {
@@ -31,7 +30,7 @@ export default function NavBar() {
             folderPath: (result as MangaFolderType).full_path,
             timeSpentReading: elapsedTime,
           });
-					invoke("update_chart_watchtime", { watchTime: elapsedTime });
+          invoke("update_chart_watchtime", { watchTime: elapsedTime });
         });
         setStartTime(0);
       }
@@ -50,31 +49,19 @@ export default function NavBar() {
   return (
     <menu className="bg-primary px-1.5 md:px-30 z-50 top-0 sticky flex h-8 w-full flex-row items-center justify-between border-b-2 shadow-sm lg:px-16 xl:px-36 2xl:px-48">
       <ul className="w-full h-full flex flex-row justify-between items-center">
-        <li
-          className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent"
-        >
-          <Link
-            href=""
-            onClick={handleGoBack}
-            className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm"
-          >
+        <li className="bg-accent flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-primary">
+          <Link href="" onClick={handleGoBack} className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm">
             <ArrowLeftStartOnRectangleIcon className="w-5 h-auto" />
           </Link>
         </li>
         <ul className="flex flex-row gap-1">
           <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
-            <Link
-              href="/stats"
-              className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm"
-            >
+            <Link href="/stats" className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm">
               <BarChart3 className="w-5 h-auto" strokeWidth={2.4} />
             </Link>
           </li>
-          <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
-            <Link
-              href=""
-              className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm"
-            >
+          <li className="bg-secondary text-primary flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm">
+            <Link href="" className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
