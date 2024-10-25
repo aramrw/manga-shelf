@@ -50,7 +50,7 @@ export default function FolderContextMenu({
         {isMangaFolder && handleMangaClick ? (
           <div
             className={cn(
-              "h-[150px] w-full max-w-32 bg-primary p-1 flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-md transition-transform duration-100 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-muted-foreground ring-opacity-50 font-bold",
+              "h-fit w-full bg-primary p-1 flex flex-col justify-center items-center text-center rounded-sm cursor-pointer will-change-transform shadow-md transition-transform duration-100 ease-in-out outline-none focus-visible:ring-2 focus-visible:ring-muted-foreground ring-opacity-50 font-bold",
               asChild &&
                 "p-0 border-primary border-2 bg-none font-semibold text-xs rounded-sm bg-primary transition hover:translate-y-[1px] will-change-transform",
               !asChild && "hover:scale-[1.005]",
@@ -74,7 +74,7 @@ export default function FolderContextMenu({
                 right: 0;
                 bottom: 0;
                 background-image: url(${convertFileSrc(folder.cover_panel_path)});
-                filter: blur(5px); /* Adjust the blur radius as needed */
+                filter: blur(2px); /* Adjust the blur radius as needed */
                 z-index: 0; /* Place it behind the image */
                 background-size: cover;
                 background-position: center;
@@ -83,7 +83,7 @@ export default function FolderContextMenu({
 
             <Image
               alt={folder.title}
-              className="object-cover w-full h-full relative z-10" // Ensure image stays on top
+              className="object-cover w-fit h-auto max-h-40 relative z-10" // Ensure image stays on top
               src={convertFileSrc(folder.cover_panel_path)}
               priority
               width={500}
@@ -95,44 +95,44 @@ export default function FolderContextMenu({
           <ParentFolder key={folder.id} parentFolder={folder} />
         )}
       </ContextMenuTrigger>
-      {!asChild && (
-        <ContextMenuContent className="font-semibold">
-          <ContextMenuItem className="flex flex-row items-center gap-0.5 cursor-pointer" onClick={() => handleInvokeShowInFolder(folder.full_path)}>
-            <span>Show In Explorer</span>
-            <FolderIcon className="h-4 w-auto" />
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          {isMangaFolder && (
-            <>
-              <ContextMenuSub>
-                <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
-                  <span>Read</span>
-                  <BookOpenIcon className="h-4 w-auto" />
-                </ContextMenuSubTrigger>
-                <ContextMenuSubContent className="ml-1">
-                  <ContextMenuItem
-                    className="flex flex-row items-center gap-0.5 cursor-pointer"
-                    onClick={() => {
-                      invoke("set_folder_read", { path: folder.full_path }).then((_) => {});
-                    }}
-                  >
-                    <span>Set as Read</span>
-                    <EyeIcon className="h-4 w-auto" />
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    className="flex flex-row items-center gap-0.5 cursor-pointer"
-                    onClick={() => {
-                      invoke("set_folder_unread", { path: folder.full_path });
-                    }}
-                  >
-                    <span>Set as Unread</span>
-                    <EyeSlashIcon className="h-4 w-auto" />
-                  </ContextMenuItem>
-                </ContextMenuSubContent>
-              </ContextMenuSub>
-              <ContextMenuSeparator />
-            </>
-          )}
+      <ContextMenuContent className="font-semibold">
+        <ContextMenuItem className="flex flex-row items-center gap-0.5" onClick={() => handleInvokeShowInFolder(folder.full_path)}>
+          <span>Show In Explorer</span>
+          <FolderIcon className="h-4 w-auto" />
+        </ContextMenuItem>
+        {isMangaFolder && !asChild && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuSub>
+              <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
+                <span>Read</span>
+                <BookOpenIcon className="h-4 w-auto" />
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent className="ml-1">
+                <ContextMenuItem
+                  className="flex flex-row items-center gap-0.5 cursor-pointer"
+                  onClick={() => {
+                    invoke("set_folder_read", { path: folder.full_path }).then((_) => {});
+                  }}
+                >
+                  <span>Set as Read</span>
+                  <EyeIcon className="h-4 w-auto" />
+                </ContextMenuItem>
+                <ContextMenuItem
+                  className="flex flex-row items-center gap-0.5 cursor-pointer"
+                  onClick={() => {
+                    invoke("set_folder_unread", { path: folder.full_path });
+                  }}
+                >
+                  <span>Set as Unread</span>
+                  <EyeSlashIcon className="h-4 w-auto" />
+                </ContextMenuItem>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSeparator />
+          </>
+        )}
+        {!asChild && (
           <ContextMenuSub>
             <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
               <span>Delete</span>
@@ -155,8 +155,8 @@ export default function FolderContextMenu({
               </ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
-        </ContextMenuContent>
-      )}
+        )}
+      </ContextMenuContent>
     </ContextMenu>
   );
 }
