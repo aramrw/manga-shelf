@@ -37,7 +37,7 @@
   "productName": "mangashelf",
   "mainBinaryName": "mangashelf",
   "version": "0.1.0",
-  "identifier": "com.mangashelf.app",
+  "identifier": "com.mangashelf.dev",
   "plugins": {},
   "app": {
     "windows": [
