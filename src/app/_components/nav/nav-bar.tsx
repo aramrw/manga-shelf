@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeftStartOnRectangleIcon } from "@heroicons/react/16/solid";
+import { ArrowLeftStartOnRectangleIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
@@ -47,20 +47,20 @@ export default function NavBar() {
   };
 
   return (
-    <menu className="bg-primary px-1.5 md:px-30 z-50 top-0 sticky flex h-8 w-full flex-row items-center justify-between border-b-2 shadow-sm lg:px-16 xl:px-36 2xl:px-48">
+    <menu className="flex h-8 w-full flex-row bg-primary px-1.5 md:px-30 md:h-10 z-50 top-0 stickyitems-center justify-between border-b-2 shadow-sm lg:px-16 xl:px-36 2xl:px-48">
       <ul className="w-full h-full flex flex-row justify-between items-center">
-        <li className="bg-accent flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-primary">
+        <li className="transition-all bg-gray-700 text-accent flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm ">
           <Link href="" onClick={handleGoBack} className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm">
-            <ArrowLeftStartOnRectangleIcon className="w-5 h-auto" />
+            <ArrowUturnLeftIcon className="w-5 md:w-7 h-auto  transition-all" />
           </Link>
         </li>
         <ul className="flex flex-row gap-1">
-          <li className="flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm text-accent">
+          <li className="transition-all pl-0.5 bg-gray-700 text-accent flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm">
             <Link href="/stats" className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm">
-              <BarChart3 className="w-5 h-auto" strokeWidth={2.4} />
+              <BarChart3 className="w-5 md:w-6 h-auto  transition-all" strokeWidth={2.4} />
             </Link>
           </li>
-          <li className="bg-secondary text-primary flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm">
+          <li className="transition-all bg-gray-700 text-accent flex flex-row justify-center items-center cursor-pointer hover:opacity-80 rounded-sm">
             <Link href="" className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white ring-opacity-50 rounded-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -68,7 +68,7 @@ export default function NavBar() {
                 viewBox="0 0 24 24"
                 strokeWidth={1.7}
                 stroke="currentColor"
-                className="w-[1.3rem] h-auto hover:animate-spin transition-all duration-500 ease-in-out"
+                className="w-[1.3rem] md:w-7 h-auto hover:animate-spin transition-all"
               >
                 <path
                   strokeLinecap="round"
