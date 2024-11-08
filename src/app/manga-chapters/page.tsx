@@ -102,6 +102,13 @@ export default function MangaChapters() {
     });
   };
 
+  const handleDisplayTime = (time: string): string => {
+    time.split(":").pop();
+    const [hours, minutes] = time.split(":");
+
+    return `${hours}:${minutes}`;
+  };
+
   // First useEffect to begin the page rendering
   useEffect(() => {
     fetchGlobalParent().then((manga: unknown) => {
@@ -147,7 +154,7 @@ export default function MangaChapters() {
       <>
         {mainParentFolder ? (
           <>
-            <header className="w-full h-64 md:h-72 lg:h-[330px] py-3 px-2 relative border-b-primary border-b-2">
+            <header className="w-full h-64 md:h-72 lg:h-[330px] py-2 px-4 relative border-b-primary border-b-2">
               <div
                 className="absolute inset-0 z-0"
                 style={{
@@ -176,10 +183,10 @@ export default function MangaChapters() {
                   />
                   {lastReadMangaFolder && lastReadMangaPanel && (
                     <TooltipProvider>
-                      <Tooltip>
+                      <Tooltip delayDuration={420}>
                         <TooltipTrigger>
                           <div
-                            className="rounded-sm font-semibold mt-[1.5px] relative gap-0.5 flex flex-row justify-center items-center bg-muted text-primary hover:-translate-y-1 hover:bg-muted transition-all outline py-0.5 px-1"
+                            className="rounded-sm font-semibold mt-[1.5px] relative gap-0.5 flex flex-row justify-center items-center bg-muted text-primary hover:-translate-y-1 hover:bg-accent transition-all outline px-1"
                             onClick={() => handleMangaClick(lastReadMangaFolder?.full_path)}
                           >
                             <span>Last Read</span>
@@ -189,19 +196,30 @@ export default function MangaChapters() {
                         <TooltipContent
                           side="bottom"
                           align="start"
-                          className="relative gap-1 flex flex-col justify-center items-start bg-accent text-primary font-semibold rounded-sm outline"
+                          className="p-0.5 relative gap-1 flex flex-col justify-center items-start bg-zinc-200 text-primary font-semibold rounded-sm outline"
                         >
-                          <p className="">{lastReadMangaFolder.title}</p>
-                          <span className="absolute bg-primary w-full h-0.5 top-[22px]"></span>
-                          <div className="w-fit flex flex-row gap-1">
-                            <div className="w-full gap-1 flex flex-col items-start">
-                              <p className="h-fit w-fit bg-muted shadow-md px-1 rounded-sm">
-                                TSR ({calculateTimeSpentWatching(lastReadMangaFolder.time_spent_reading)})
-                              </p>
-                              <p className="h-fit w-fit bg-muted shadow-md px-1 rounded-sm">{lastReadMangaFolder.updated_at}</p>
+                          <div className="h-full p-1 shadow-md w-fit flex flex-row items-start gap-1 bg-zinc-100 rounded-sm">
+                            <div className="h-full w-full gap-1 flex flex-col items-start">
+                              <p className="select-none pointer-events-none h-fit border-zinc-300 border-b-[1.5px] shadow-md">{lastReadMangaFolder.title}</p>
+                              <div className="gap-1 flex flex-col items-start justify-center h-full w-fit">
+                                {lastReadMangaFolder.updated_at
+                                  .toString()
+                                  .split(" ")
+                                  .map((item, index) => (
+                                    <p
+                                      className="border-l-2 border-zinc-400 flex flex-col select-none pointer-events-none h-fit w-fit bg-muted shadow-md px-1 rounded-sm"
+                                      key={index}
+                                    >
+                                      {index === 1 ? handleDisplayTime(item) : item}
+                                    </p>
+                                  ))}
+                                <p className="border-l-2 border-zinc-400 select-none pointer-events-none h-fit w-fit bg-muted shadow-md px-1 rounded-sm">
+                                  TSR ({calculateTimeSpentWatching(lastReadMangaFolder.time_spent_reading)})
+                                </p>
+                              </div>
                             </div>
                             <Image
-                              className="w-fit h-full max-h-20 shadow-md rounded-sm"
+                              className="w-fit h-24 shadow-md rounded-sm"
                               src={convertFileSrc(lastReadMangaPanel?.full_path)}
                               alt={`lrmp${lastReadMangaFolder.title}`}
                               width={500}
