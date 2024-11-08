@@ -104,13 +104,13 @@ export default function FolderContextMenu({
           <>
             <ContextMenuSeparator />
             <ContextMenuSub>
-              <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
+              <ContextMenuSubTrigger className="flex flex-row items-center gap-0.5">
                 <span>Read</span>
                 <BookOpenIcon className="h-4 w-auto" />
               </ContextMenuSubTrigger>
               <ContextMenuSubContent className="ml-1">
                 <ContextMenuItem
-                  className="flex flex-row items-center gap-0.5 cursor-pointer"
+                  className="flex flex-row items-center gap-0.5"
                   onClick={() => {
                     invoke("set_folder_read", { path: folder.full_path }).then((_) => {});
                   }}
@@ -119,7 +119,7 @@ export default function FolderContextMenu({
                   <EyeIcon className="h-4 w-auto" />
                 </ContextMenuItem>
                 <ContextMenuItem
-                  className="flex flex-row items-center gap-0.5 cursor-pointer"
+                  className="flex flex-row items-center gap-0.5"
                   onClick={() => {
                     invoke("set_folder_unread", { path: folder.full_path });
                   }}
@@ -134,22 +134,16 @@ export default function FolderContextMenu({
         )}
         {!asChild && (
           <ContextMenuSub>
-            <ContextMenuSubTrigger className="cursor-pointer flex flex-row items-center gap-0.5">
+            <ContextMenuSubTrigger className="flex flex-row items-center gap-0.5 data-[state=open]:bg-destructive data-[state=open]:text-white transition-colors">
               <span>Delete</span>
               <BackspaceIcon className="h-4 w-auto" />
             </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="ml-1">
-              <ContextMenuItem
-                className="flex flex-row items-center gap-0.5 cursor-pointer"
-                onClick={() => invokeDeleteFolder(folder.id, folder.full_path, false)}
-              >
+            <ContextMenuSubContent className="">
+              <ContextMenuItem className="flex flex-row items-center gap-0.5" onClick={() => invokeDeleteFolder(folder.id, folder.full_path, false)}>
                 <span>Folder Only</span>
                 <FolderIcon className="h-4 w-auto" />
               </ContextMenuItem>
-              <ContextMenuItem
-                className="flex flex-row items-center gap-0.5 cursor-pointer"
-                onClick={() => invokeDeleteFolder(folder.id, folder.full_path, true)}
-              >
+              <ContextMenuItem className="flex flex-row items-center gap-0.5" onClick={() => invokeDeleteFolder(folder.id, folder.full_path, true)}>
                 <span>Include Panel Data</span>
                 <FireIcon className="h-4 w-auto" />
               </ContextMenuItem>
